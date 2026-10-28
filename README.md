@@ -44,3 +44,7 @@ The `demo_sign_in` migration and `*_DEMO_AUTH=1` let testers sign in with the co
 SMS or email. Demo accounts share one password that is in this repository, so anyone can sign in as
 them: keep only test data in a project that has demo sign-in on, and switch it off before real
 farmers use it (see `supabase/README.md`).
+
+Demo accounts: farmer **0712 345 678** (Juma), dashboard **agronomist.demo@example.com** (agronomist)
+and **admin.demo@example.com** (co-op owner, can add people on the Team page). Farmers join the demo
+co-op in the app under Profile → Join a co-op with the code **DEMO-2026**.
