@@ -63,6 +63,6 @@ export type Issue = {
   createdAt: string;
   updatedAt: string;
   followUpDue: string | null;
-  ai: { state: CheckState; causes: { id: string; likelihood: Likelihood }[]; library: string } | null;
+  ai: { state: CheckState; causes: { id: string; likelihood: Likelihood }[]; library: string; observed?: string[] } | null;
   events: IssueEvent[];
 };

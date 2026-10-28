@@ -77,6 +77,18 @@ export async function askAgronomistRemote(client: SupabaseClient, checkId: strin
   if (error) throw new Error(error.message);
 }
 
+const tried = new Set<string>();
+
+/**
+ * Asks the photo reader for a first answer (supabase/functions/diagnose). Once per check per app run:
+ * when it fails (no key yet, no signal, daily limit) the check still waits for the agronomist.
+ */
+export async function diagnoseRemote(client: SupabaseClient, checkId: string) {
+  if (tried.has(checkId)) return;
+  tried.add(checkId);
+  await client.functions.invoke('diagnose', { body: { check_id: checkId } }).catch(() => {});
+}
+
 /** Hands an uploaded follow-up to the first check's case, which goes back to the agronomist. */
 export async function sendFollowUpRemote(client: SupabaseClient, checkId: string) {
   const { error } = await client.rpc('send_follow_up', { p_check: checkId });

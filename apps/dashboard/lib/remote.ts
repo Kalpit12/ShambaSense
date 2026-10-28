@@ -37,7 +37,7 @@ export async function loadIssues(client: SupabaseClient): Promise<Issue[]> {
 
   const [checks, results, media, events, profiles, team] = await Promise.all([
     client.from('crop_checks').select('id, crop_claimed, symptoms').in('id', checkIds),
-    client.from('check_results').select('check_id, model_version, state, causes').in('check_id', checkIds),
+    client.from('check_results').select('check_id, model_version, state, causes, observed').in('check_id', checkIds),
     client.from('media').select('check_id, storage_path').in('check_id', checkIds),
     client.from('issue_events').select('id, issue_id, kind, actor_kind, actor_name, body, cause_ids, status, flagged, check_id, created_at').in('issue_id', issues.map((i) => i.id)).order('created_at'),
     client.from('profiles').select('user_id, display_name, language, county, ward').in('user_id', ownerIds),
@@ -101,6 +101,7 @@ export async function loadIssues(client: SupabaseClient): Promise<Issue[]> {
             state: result.state as CheckState,
             causes: ((result.causes ?? []) as { cause_id: string; likelihood: Likelihood }[]).map((c) => ({ id: c.cause_id, likelihood: c.likelihood })),
             library: result.model_version,
+            observed: result.observed ?? [],
           }
         : null,
       events: history,

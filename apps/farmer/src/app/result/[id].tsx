@@ -222,7 +222,7 @@ export default function ResultScreen() {
                   {whyLines(result, crop, t).map((line) => (
                     <Bullet key={line}>{line}</Bullet>
                   ))}
-                  <Text style={styles.source}>{t('result.library', { version: result.library })}</Text>
+                  <Text style={styles.source}>{result.library.startsWith('openai:') ? t('result.model', { version: result.library.slice(7) }) : t('result.library', { version: result.library })}</Text>
                 </Enter>
               ) : null}
             </Card>
@@ -397,7 +397,7 @@ function whyLines(result: CheckResult, crop: string, t: (k: string, o?: Record<s
   const lines: string[] = [];
   const lower = crop.toLowerCase();
   if (result.state === 'possible_match') {
-    lines.push(t('result.whyLines.compared', { crop: lower }));
+    lines.push(t(result.library.startsWith('openai:') ? 'result.whyLines.model' : 'result.whyLines.compared', { crop: lower }));
     lines.push(
       result.causes.length === 1
         ? t('result.whyLines.closest', { cause: t(`causes.${result.causes[0].id}.name`) })
@@ -408,6 +408,7 @@ function whyLines(result: CheckResult, crop: string, t: (k: string, o?: Record<s
   if (result.state === 'needs_more_information') lines.push(t('result.whyLines.unclear'));
   if (result.state === 'expert_review_required') lines.push(t('result.whyLines.expert'));
   if (result.state === 'unsupported_crop') lines.push(t('result.whyLines.unsupported', { crop: lower }));
+  if (result.library.startsWith('openai:')) lines.push(t('result.whyLines.reviewed'));
   lines.push(t('result.whyLines.noProducts'));
   if (result.preview) lines.push(t('result.whyLines.preview'));
   return lines;

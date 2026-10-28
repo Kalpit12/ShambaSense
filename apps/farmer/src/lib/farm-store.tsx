@@ -5,7 +5,7 @@ import { previewResult, type CheckResult } from './check-results';
 
 import type { Crop } from './onboarding';
 import { isPreview, supabase } from './auth';
-import { askAgronomistRemote, farmIdFor, pullAnswers, sendFollowUpRemote, sendRow, type Row } from './remote-sync';
+import { askAgronomistRemote, diagnoseRemote, farmIdFor, pullAnswers, sendFollowUpRemote, sendRow, type Row } from './remote-sync';
 import { deletePhotos, keepPhoto } from './photos';
 import { PREVIEW_PHONE, previewSeed } from './preview-seed';
 
@@ -231,6 +231,7 @@ export function FarmStoreProvider({ owner, userId, children }: { owner: string; 
         const item = queue[i];
         await sendRow(client, userId, farmId, item);
         if (item.table === 'checks') await askAgronomistRemote(client, item.row.id);
+        if (item.table === 'checks') await diagnoseRemote(client, item.row.id);
         if (item.table === 'followUps') await sendFollowUpRemote(client, item.row.id);
         const id = item.row.id;
         update((cur) => ({
@@ -262,6 +263,8 @@ export function FarmStoreProvider({ owner, userId, children }: { owner: string; 
     // Every case still open, since a follow-up photo can bring a new answer after the first one.
     const open = dataRef.current.checks.filter((c) => c.sent && (c.status !== 'done' || (c.askedAt && !c.caseClosed)));
     try {
+      // Checks sent while the photo reader was down get one more try per app run.
+      await Promise.all(open.filter((c) => !c.result).map((c) => diagnoseRemote(supabase!, c.id)));
       const answers = await pullAnswers(supabase, open.map((c) => c.id));
       if (answers.size === 0) return;
       update((cur) => ({

@@ -139,7 +139,10 @@ export function IssueDetail({ issue, onClose }: { issue: Issue; onClose: () => v
           ) : (
             <p className="muted">No cause suggested.</p>
           )}
-          <p className="meta muted">Library {ai.library}. Scores stay on the server and are not shown.</p>
+          {ai.observed?.length ? <p className="meta">Seen in the photo: {ai.observed.join('; ')}.</p> : null}
+          <p className="meta muted">
+            {ai.library.startsWith('openai:') ? `Read by ${ai.library.slice(7)}.` : `Library ${ai.library}.`} Scores stay on the server and are not shown.
+          </p>
         </section>
       ) : null}
 

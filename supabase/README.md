@@ -37,3 +37,19 @@ with the code **123456** and send nothing. Set `EXPO_PUBLIC_DEMO_AUTH=1` (farmer
 
 Before launch: `update feature_flags set enabled = false where key = 'demo_auth';`, delete the
 `@example.com` users, and drop the three `demo_*` functions.
+
+## Photo reading (`functions/diagnose`)
+
+The farmer app calls this Edge Function after a crop check's photo is uploaded. It sends the photo to
+OpenAI with the reviewed cause list for the crop and writes a `check_results` row: a possible match
+(at most two causes from the list), "needs more information", or "expert review". Only tomatoes have a
+reviewed library so far; other crops get `unsupported_crop` without calling the model. An agronomist
+still sees every check during the pilot, with the model's answer marked "AI suggestion · not reviewed".
+
+Secrets (Supabase → Edge Functions → Secrets):
+
+| Name | Needed | What |
+|---|---|---|
+| `OPENAI_API_KEY` | yes | Key from platform.openai.com. Without it the function answers 503 and checks wait for the agronomist as before. |
+| `OPENAI_MODEL` | no | Defaults to `gpt-5.4-mini`. Must accept images. |
+| `DAILY_CHECKS_PER_FARMER` | no | Photos one farmer can have read in 24 hours. Defaults to 20. |

@@ -458,6 +458,8 @@ export const sw: Strings = {
     why: 'Kwa nini jibu hili?',
     whyLines: {
       compared: 'Tumelinganisha picha yako na picha za {{crop}} zilizokaguliwa na wataalamu.',
+      model: 'Programu ya kompyuta iliangalia picha yako na kuilinganisha na dalili za kila chanzo katika maktaba ya {{crop}} iliyokaguliwa.',
+      reviewed: 'Mtaalamu wa ushirika wako pia anaangalia kila ukaguzi wakati wa majaribio.',
       closest: 'Picha yako inakaribiana zaidi na {{cause}}.',
       several: 'Picha yako inalingana na {{causes}} kwa kiasi sawa, kwa hiyo kila kimoja kinaonyeshwa kama kinawezekana.',
       and: ' na ',
@@ -469,6 +471,7 @@ export const sw: Strings = {
       preview: 'Katika majaribio haya jibu linatokana na dalili ulizochagua, si picha.',
     },
     library: 'Toleo la maktaba: {{version}}',
+    model: 'Imesomwa na programu ya kompyuta {{version}}',
     waitingBody: 'Picha yako imehifadhiwa kwenye simu. Itakaguliwa ikishatumwa.',
     offlineBody: 'Hakuna mtandao. Picha imehifadhiwa kwenye simu. Itakaguliwa mtandao ukirudi.',
     checkingBody: 'Inakagua maktaba iliyokaguliwa ya zao hili…',

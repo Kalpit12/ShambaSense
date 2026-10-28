@@ -455,6 +455,8 @@ export const en = {
     why: 'Why this result?',
     whyLines: {
       compared: 'We compared your photo with photos of {{crop}} that agronomists have checked.',
+      model: 'A computer model looked at your photo and compared it with the signs of each cause in the reviewed {{crop}} library.',
+      reviewed: 'An agronomist from your co-op also looks at every check during the pilot.',
       closest: 'Your photo is closest to {{cause}}.',
       several: 'Your photo fits {{causes}} about equally, so each is shown as possible.',
       and: ' and ',
@@ -466,6 +468,7 @@ export const en = {
       preview: 'In this preview the result comes from the signs you picked, not from the photo.',
     },
     library: 'Library version: {{version}}',
+    model: 'Read by computer model {{version}}',
     waitingBody: 'Your photo is saved on this phone. It will be checked once it is sent.',
     offlineBody: 'No signal. Photo saved on this phone. It will be checked when signal returns.',
     checkingBody: 'Checking a reviewed library for this crop…',
