@@ -1,0 +1,31 @@
+# Builds the farmer app as an installable Android APK on Expo's free build service (EAS, free plan).
+# Run it from GitHub → Actions → "Android APK" → Run workflow. The build itself runs on Expo's servers
+# and takes 10-30 minutes on the free queue; the link to download the APK appears on expo.dev and in
+# this job's log. Expo keeps the signing key, so every APK installs over the last one.
+#
+# Needs one repository secret: EXPO_TOKEN (expo.dev → Account settings → Access tokens).
+name: Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/farmer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/farmer/package-lock.json
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: eas build --platform android --profile preview --non-interactive --no-wait

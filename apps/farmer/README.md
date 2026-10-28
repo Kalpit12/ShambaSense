@@ -11,7 +11,7 @@ Expo SDK 58 (React Native 0.88), Expo Router, TypeScript. Follows `../design.md`
 | `/sign-in` | +254 phone, Send code. Unknown number offers Create an account |
 | `/verify` | 6-digit SMS code (Android autofill), resend after 60 s, change number |
 | `/onboarding` | Only after a new sign-up: 9 questions, one per screen, then a summary. See below |
-| `/home` (tab) | Dark photo hero (sync chip, date, greeting, farm, weather placeholder, 8-week money chart), Today tasks, Season rings, Money by plot, last crop check, 3 recent records |
+| `/home` (tab) | Dark photo hero (sync chip, date, greeting, farm, 3-day weather card, 8-week money chart), Today tasks, Season rings, Money by plot, last crop check, 3 recent records |
 | `/shamba` (tab) | Dark hero with farm name, size and water chips, and a land-in-use bar (acres per plot against the farm size); plot cards with season progress, last activity and 8-week net; Add plot sheet |
 | `/plot/[id]` | One plot: season ring, Add record and Check this plot shortcuts (pre-pick the plot), details, 8-week money, full history |
 | `/check` (centre button) | Full-screen flow: framing tips → take photo or choose from gallery → preview (use / retake) → plot, crop, up to 3 symptoms → "Saved on this phone" |
@@ -148,3 +148,15 @@ src/theme/tokens.ts design tokens from design.md §5
 ```
 
 When the pnpm/Turborepo monorepo exists this moves to `apps/farmer`, tokens to `packages/ui-tokens`, strings to `packages/i18n`.
+
+## Android APK for pilot phones
+
+The `preview` profile in `eas.json` builds an APK that installs straight onto a phone (no Play Store),
+pointed at the live Supabase project, for 32- and 64-bit ARM phones only (smaller download). Expo's free
+plan covers it. Two ways to start a build:
+
+- **GitHub:** Actions → *Android APK* → *Run workflow* (needs the `EXPO_TOKEN` repository secret).
+- **Your computer:** `cd apps/farmer && npx eas-cli build -p android --profile preview` after `npx eas-cli login`.
+
+Expo keeps the signing key and raises the version code on every build, so a new APK installs over the old
+one and keeps the farmer signed in. The download link shows on expo.dev under the project's Builds.
