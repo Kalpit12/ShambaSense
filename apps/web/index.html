@@ -1,0 +1,1287 @@
+<title>ShambaSense</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: "field instrument". Stone ground, ink type, forest only on actions.
+   Hero = headline left, live phone loop right over drifting plot contours. */
+:root {
+  --stone: #e7e6df;
+  --stone-2: #dcdbd2;
+  --paper: #f3f2ed;
+  --ink: #17201b;
+  --ink-2: #4f5a53;
+  --ink-3: #7d867f;
+  --line: #c9c9be;
+  --forest: #1f5a3a;
+  --forest-ink: #f3f2ed;
+  --forest-soft: #d5e1d6;
+  --tomato: #b8432c;
+  --lesion: #6b4a2b;
+  --halo: #c9b048;
+  --amber: #9a6a12;
+  --amber-soft: #efe2c2;
+  --contour: 31 90 58;
+  --leaf: #4f7d3c;
+  --leaf-2: #6d9a4f;
+  --screen: #f7f6f2;
+  --phone: #1b211d;
+
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --step--1: 0.8125rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.25rem;
+  --step-2: 1.75rem;
+  --step-3: clamp(2rem, 4.2vw, 3.25rem);
+  --step-4: clamp(2.6rem, 5.9vw, 5.6rem);
+  --radius: 14px;
+  --max: 1200px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --stone: #111713; --stone-2: #18201b; --paper: #1b231e; --ink: #e6e5dd; --ink-2: #aab2ab; --ink-3: #7c867f;
+    --line: #2c3730; --forest: #5fae7e; --forest-ink: #0d140f; --forest-soft: #1f3327; --tomato: #e0745c;
+    --lesion: #8a6340; --halo: #c9b048; --amber: #e2b04a; --amber-soft: #3a2f17; --contour: 95 174 126;
+    --leaf: #4f7d3c; --leaf-2: #6d9a4f; --screen: #f7f6f2; --phone: #050806; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --stone: #111713; --stone-2: #18201b; --paper: #1b231e; --ink: #e6e5dd; --ink-2: #aab2ab; --ink-3: #7c867f;
+  --line: #2c3730; --forest: #5fae7e; --forest-ink: #0d140f; --forest-soft: #1f3327; --tomato: #e0745c;
+  --lesion: #8a6340; --halo: #c9b048; --amber: #e2b04a; --amber-soft: #3a2f17; --contour: 95 174 126;
+  --leaf: #4f7d3c; --leaf-2: #6d9a4f; --screen: #f7f6f2; --phone: #050806; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--stone); color: var(--ink);
+  font-family: var(--f-body); font-size: var(--step-0); line-height: 1.55;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 50; background: var(--stone); }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; line-height: 1; letter-spacing: -0.01em; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+a { color: inherit; }
+.wrap { max-width: var(--max); margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+@media (min-width: 720px) { .wrap { padding-left: max(32px, env(safe-area-inset-left, 0px)); padding-right: max(32px, env(safe-area-inset-right, 0px)); } }
+.mono { font-family: var(--f-mono); }
+.label { font-family: var(--f-mono); font-size: var(--step--1); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+:focus-visible { outline: 3px solid var(--forest); outline-offset: 3px; border-radius: 6px; }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 0; font: 600 var(--step-0)/1 var(--f-body); cursor: pointer; text-decoration: none; transition: transform .15s ease, background .2s ease; }
+.btn-primary { background: var(--forest); color: var(--forest-ink); }
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+.btn-ghost:hover { box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+
+/* ---------- nav ---------- */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40; background: color-mix(in srgb, var(--stone) 86%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+.nav.scrolled { border-bottom-color: var(--line); }
+.nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 68px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--f-body); font-weight: 700; font-size: 1.3rem; letter-spacing: -0.035em; }
+.brand svg { flex: none; }
+.nav-links { display: none; gap: 28px; font-size: 0.95rem; color: var(--ink-2); }
+.nav-links a { text-decoration: none; }
+.nav-links a:hover { color: var(--ink); }
+.nav .btn { min-height: 42px; padding: 0 18px; font-size: 0.95rem; }
+@media (min-width: 900px) { .nav-links { display: flex; } }
+
+/* ---------- hero ---------- */
+.hero { position: relative; overflow: hidden; padding-block: 40px 72px; }
+.hero canvas.contours { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+  -webkit-mask-image: radial-gradient(75% 85% at 72% 50%, #000 30%, transparent 78%);
+          mask-image: radial-gradient(75% 85% at 72% 50%, #000 30%, transparent 78%); }
+.hero-grid { position: relative; display: grid; gap: 48px; align-items: center; }
+@media (min-width: 980px) { .hero-grid { grid-template-columns: 1.25fr 0.75fr; gap: 32px; } .hero { padding-block: 56px 96px; } }
+.hero-copy { min-width: 0; display: grid; gap: 28px; justify-items: start; }
+.hero-copy > * { max-width: 100%; }
+.eyebrow { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dot-live { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 0 var(--amber); animation: pulse 2.4s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--amber) 60%, transparent); } 70% { box-shadow: 0 0 0 9px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+.headline { font-size: var(--step-4); font-weight: 700; line-height: 0.92; letter-spacing: -0.025em; }
+.headline .l1 { color: var(--ink-3); display: block; }
+.headline .l2 { display: block; }
+.headline .w { display: inline-block; animation: rise .9s cubic-bezier(.2,.8,.2,1) both; }
+.headline .l1 .w:nth-child(1) { animation-delay: .05s } .headline .l1 .w:nth-child(2) { animation-delay: .12s } .headline .l1 .w:nth-child(3) { animation-delay: .19s }
+.headline .l2 .w:nth-child(1) { animation-delay: .36s } .headline .l2 .w:nth-child(2) { animation-delay: .43s } .headline .l2 .w:nth-child(3) { animation-delay: .5s }
+@keyframes rise { from { transform: translateY(0.35em); opacity: .15; } to { transform: none; opacity: 1; } }
+.headline .shamba { position: relative; }
+.headline .shamba svg { position: absolute; left: -2%; bottom: -0.12em; width: 104%; height: 0.28em; overflow: visible; }
+.headline .shamba path { fill: none; stroke: var(--forest); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 320; stroke-dashoffset: 0; animation: draw 1.1s .9s ease-out both; }
+@keyframes draw { from { stroke-dashoffset: 320; } to { stroke-dashoffset: 0; } }
+
+.lang-switch { display: inline-flex; padding: 4px; gap: 4px; border-radius: 999px; background: var(--stone-2); border: 1px solid var(--line); }
+.lang-switch button { font: 500 0.875rem/1 var(--f-mono); border: 0; background: transparent; color: var(--ink-2); padding: 8px 12px; border-radius: 999px; cursor: pointer; min-height: 34px; }
+.lang-switch button[aria-pressed="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+.hero-swap { transition: opacity .35s ease, transform .35s ease; }
+.hero-swap.out { opacity: 0; transform: translateY(6px); }
+
+.lede { font-size: var(--step-1); color: var(--ink-2); max-width: 34em; line-height: 1.5; }
+.lede strong { color: var(--ink); font-weight: 600; }
+
+.waitlist { display: grid; gap: 10px; width: 520px; }
+.field-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.phone-field { flex: 1 1 240px; min-width: 0; display: flex; align-items: center; min-height: 52px; border-radius: 999px; background: var(--paper); border: 1.5px solid var(--line); padding-left: 18px; transition: border-color .2s; }
+.phone-field:focus-within { border-color: var(--forest); }
+.phone-field .cc { font: 500 var(--step-0)/1 var(--f-mono); color: var(--ink-2); padding-right: 10px; border-right: 1px solid var(--line); }
+.phone-field input { flex: 1; min-width: 0; height: 48px; border: 0; background: transparent; font: 500 var(--step-0)/1 var(--f-mono); color: var(--ink); padding: 0 14px; outline: none; }
+.phone-field input::placeholder { color: var(--ink-3); }
+.waitlist .btn { min-height: 52px; flex: 0 0 auto; }
+.form-note { font-size: var(--step--1); color: var(--ink-3); min-height: 1.4em; }
+.form-note.err { color: var(--tomato); }
+.form-note.ok { color: var(--forest); font-weight: 500; }
+
+/* ---------- phone ---------- */
+.stage { position: relative; display: grid; place-items: center; min-height: 600px; }
+.plot-tags { position: absolute; inset: 0; pointer-events: none; }
+.plot-tag { position: absolute; font: 500 0.72rem/1.3 var(--f-mono); color: var(--ink-2); letter-spacing: .04em; background: color-mix(in srgb, var(--stone) 80%, transparent); padding: 3px 7px; border-radius: 4px; border: 1px dashed color-mix(in srgb, var(--ink-3) 60%, transparent); white-space: nowrap; }
+.phone { position: relative; width: 292px; height: 600px; border-radius: 44px; background: var(--phone); padding: 11px; box-shadow: 0 1px 0 1px color-mix(in srgb, var(--ink) 20%, transparent), 0 40px 80px -30px rgb(10 20 14 / .55), 0 18px 36px -18px rgb(10 20 14 / .4); transform: rotate(-2deg); animation: float 7s ease-in-out infinite; }
+@keyframes float { 0%,100% { transform: rotate(-2deg) translateY(0); } 50% { transform: rotate(-1.4deg) translateY(-10px); } }
+.screen { position: relative; width: 100%; height: 100%; border-radius: 34px; overflow: hidden; background: var(--screen); color: #17201b; font-family: var(--f-body); }
+.notch { position: absolute; top: 8px; left: 50%; translate: -50% 0; width: 86px; height: 24px; border-radius: 20px; background: #050806; z-index: 5; }
+.status { position: absolute; top: 0; left: 0; right: 0; height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font: 600 12px/1 var(--f-mono); z-index: 4; color: #17201b; }
+.bars { display: flex; align-items: flex-end; gap: 2px; height: 11px; }
+.bars i { width: 3px; background: #c8c9c0; border-radius: 1px; transition: background .3s; }
+.bars i:nth-child(1) { height: 4px } .bars i:nth-child(2) { height: 6px } .bars i:nth-child(3) { height: 8px } .bars i:nth-child(4) { height: 11px }
+.phone[data-signal="1"] .bars i:nth-child(-n+1),
+.phone[data-signal="2"] .bars i:nth-child(-n+2),
+.phone[data-signal="4"] .bars i:nth-child(-n+4) { background: #17201b; }
+.status .right { display: flex; align-items: center; gap: 6px; }
+.status .nosig { font-size: 10px; color: #8a6a1a; }
+.phone[data-signal="4"] .status .nosig, .phone[data-signal="2"] .status .nosig { display: none; }
+
+.app-head { position: absolute; top: 40px; left: 0; right: 0; padding: 8px 16px 10px; display: flex; align-items: center; justify-content: space-between; z-index: 3; }
+.app-head b { font: 700 17px/1 var(--f-display); }
+.sync-chip { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; font: 500 11px/1 var(--f-mono); background: #ecebe4; color: #4f5a53; transition: background .3s, color .3s; white-space: nowrap; }
+.sync-chip .sd { width: 7px; height: 7px; border-radius: 50%; background: #9aa198; }
+.sync-chip.waiting { background: #f3e6c4; color: #6e4c0b; } .sync-chip.waiting .sd { background: #c08a1e; }
+.sync-chip.sending .sd { background: #c08a1e; animation: blink .6s infinite alternate; }
+.sync-chip.sent { background: #d9e7da; color: #1f5a3a; } .sync-chip.sent .sd { background: #1f5a3a; }
+@keyframes blink { to { opacity: .2; } }
+
+.view { position: absolute; top: 84px; left: 0; right: 0; bottom: 64px; padding: 0 14px; opacity: 0; transform: translateY(10px); transition: opacity .45s ease, transform .45s ease; pointer-events: none; }
+.view.on { opacity: 1; transform: none; }
+.tabs { position: absolute; bottom: 0; left: 0; right: 0; height: 64px; display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid #e2e1d9; background: #fbfaf7; font: 500 9.5px/1 var(--f-body); color: #7d867f; z-index: 3; }
+.tabs span { display: grid; place-items: center; align-content: center; gap: 5px; }
+.tabs span i { width: 18px; height: 18px; border-radius: 5px; border: 1.8px solid currentColor; }
+.tabs span.on { color: #1f5a3a; font-weight: 700; }
+.tabs span.on i { background: #1f5a3a; border-color: #1f5a3a; }
+
+/* camera view */
+.cam { position: relative; height: 100%; border-radius: 20px; overflow: hidden; background: radial-gradient(120% 90% at 50% 30%, #3e5a33, #1e2c1b 70%); }
+.cam svg.leaf { position: absolute; left: 50%; top: 46%; width: 70%; translate: -50% -50%; rotate: 12deg; filter: drop-shadow(0 12px 16px rgb(0 0 0 / .35)); }
+.cam .brackets { position: absolute; inset: 18% 13% 22%; }
+.cam .brackets i { position: absolute; width: 26px; height: 26px; border: 3px solid #f3f2ed; }
+.cam .brackets i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; border-radius: 8px 0 0 0 }
+.cam .brackets i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; border-radius: 0 8px 0 0 }
+.cam .brackets i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 8px }
+.cam .brackets i:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; border-radius: 0 0 8px 0 }
+.cam .scan { position: absolute; left: 13%; right: 13%; top: 18%; height: 2px; background: #f3f2ed; box-shadow: 0 0 18px 4px rgb(243 242 237 / .55); animation: scan 1.6s ease-in-out infinite alternate; }
+@keyframes scan { to { top: 77%; } }
+.cam .hint { position: absolute; left: 0; right: 0; bottom: 70px; text-align: center; font: 500 11px/1 var(--f-mono); color: #f3f2ed; letter-spacing: .05em; }
+.cam .shutter { position: absolute; left: 50%; bottom: 14px; translate: -50% 0; width: 46px; height: 46px; border-radius: 50%; border: 3px solid #f3f2ed; display: grid; place-items: center; }
+.cam .shutter::after { content: ""; width: 34px; height: 34px; border-radius: 50%; background: #f3f2ed; }
+.cam .crop { position: absolute; top: 12px; left: 12px; font: 500 10.5px/1 var(--f-mono); color: #17201b; background: #f3f2ed; padding: 6px 9px; border-radius: 999px; }
+
+/* result view */
+.r-title { font: 600 11px/1 var(--f-mono); color: #7d867f; letter-spacing: .06em; text-transform: uppercase; margin: 4px 0 8px; }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.compare figure { margin: 0; }
+.compare .ph { aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #2f4527; display: grid; place-items: center; }
+.compare .ph svg { width: 82%; }
+.compare figcaption { font: 500 10px/1.2 var(--f-mono); color: #4f5a53; margin-top: 5px; }
+.likely { margin-top: 12px; padding: 12px; border-radius: 14px; background: #fff; border: 1px solid #e2e1d9; }
+.likely .word { display: inline-flex; align-items: center; gap: 6px; font: 600 10.5px/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; background: #f3e6c4; color: #6e4c0b; }
+.likely h4 { font: 700 21px/1.05 var(--f-display); margin: 8px 0 4px; }
+.likely p { font-size: 11.5px; line-height: 1.4; color: #4f5a53; }
+.ask { margin-top: 10px; width: 100%; height: 40px; border-radius: 999px; border: 0; background: #1f5a3a; color: #f3f2ed; font: 600 12.5px/1 var(--f-body); display: grid; place-items: center; }
+.ask.alt { background: transparent; color: #1f5a3a; box-shadow: inset 0 0 0 1.5px #1f5a3a; margin-top: 6px; }
+
+/* agronomist view */
+.thread { display: grid; gap: 10px; }
+.bubble { padding: 11px 12px; border-radius: 14px; background: #fff; border: 1px solid #e2e1d9; font-size: 12px; line-height: 1.4; }
+.bubble .who { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font: 600 12px/1.1 var(--f-body); }
+.bubble .av { width: 26px; height: 26px; border-radius: 50%; background: #d5e1d6; color: #1f5a3a; display: grid; place-items: center; font: 700 11px/1 var(--f-mono); flex: none; }
+.bubble .meta { font: 400 10px/1 var(--f-mono); color: #7d867f; display: block; margin-top: 2px; }
+.agree { display: inline-flex; align-items: center; gap: 6px; font: 600 10.5px/1 var(--f-mono); color: #1f5a3a; background: #d9e7da; padding: 5px 8px; border-radius: 999px; margin-bottom: 6px; }
+.task { display: flex; gap: 10px; align-items: flex-start; padding: 11px 12px; border-radius: 14px; background: #1f5a3a; color: #f3f2ed; font-size: 12px; line-height: 1.35; }
+.task .box { width: 18px; height: 18px; border-radius: 5px; border: 2px solid #f3f2ed; flex: none; margin-top: 1px; }
+.task small { display: block; font: 500 10px/1.2 var(--f-mono); opacity: .75; margin-top: 3px; }
+.sw { font-size: 11px; color: #4f5a53; font-style: italic; }
+
+/* journal view */
+.plot-head { padding: 10px 12px; border-radius: 14px; background: #fff; border: 1px solid #e2e1d9; margin-bottom: 10px; }
+.plot-head b { font: 700 16px/1.1 var(--f-display); display: block; }
+.plot-head span { font: 500 10px/1.3 var(--f-mono); color: #7d867f; }
+.entries { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.entries li { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: start; padding: 9px 2px; border-bottom: 1px dashed #dcdbd2; font-size: 12px; line-height: 1.3; }
+.entries li i { width: 10px; height: 10px; border-radius: 50%; margin-top: 3px; background: #c8c9c0; }
+.entries li em { font: 500 10px/1.3 var(--f-mono); color: #7d867f; font-style: normal; white-space: nowrap; }
+.entries li.new { background: #eef4ee; border-radius: 10px; border-bottom-color: transparent; padding-left: 6px; padding-right: 6px; animation: flash 1s ease both; }
+.entries li.new i { background: #1f5a3a; }
+.entries li.new b { color: #1f5a3a; }
+@keyframes flash { from { background: #cfe2d1; } }
+
+/* annotations around the phone */
+.note-tag { position: absolute; z-index: 6; display: none; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: var(--paper); color: var(--ink); border: 1px solid var(--line); font: 500 0.8rem/1 var(--f-mono); box-shadow: 0 8px 24px -12px rgb(0 0 0 / .3); opacity: .0001; transform: translateY(6px) scale(.98); transition: opacity .4s, transform .4s; white-space: nowrap; }
+.note-tag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--forest); }
+.note-tag.on { opacity: 1; transform: none; }
+@media (min-width: 600px) { .note-tag { display: inline-flex; } }
+
+/* step rail under phone */
+.rail { display: flex; gap: 6px; justify-content: center; margin-top: 22px; }
+.rail button { font: 500 0.75rem/1 var(--f-mono); color: var(--ink-3); background: transparent; border: 0; padding: 8px 6px; cursor: pointer; display: grid; gap: 7px; min-width: 58px; }
+.rail button::before { content: ""; height: 3px; border-radius: 3px; background: var(--line); }
+.rail button.on { color: var(--ink); }
+.rail button.on::before { background: var(--forest); }
+.stage-col { display: grid; justify-items: center; }
+
+/* ---------- readout strip ---------- */
+.readout { border-block: 1px solid var(--line); background: var(--stone-2); }
+.readout .wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.readout div.cell { padding: 20px 18px; border-left: 1px solid var(--line); display: grid; gap: 4px; min-width: 0; }
+.readout div.cell:first-child { border-left: 0; }
+.readout b { font: 600 var(--step-1)/1.15 var(--f-display); }
+.readout span { font: 400 var(--step--1)/1.4 var(--f-mono); color: var(--ink-2); }
+@media (max-width: 520px) { .readout div.cell { border-left: 0; border-top: 1px solid var(--line); } .readout div.cell:first-child { border-top: 0; } }
+
+/* ---------- sections ---------- */
+section.block { padding-block: 96px; }
+.sec-head { display: grid; gap: 16px; max-width: 760px; margin-bottom: 48px; }
+.sec-head h2 { font-size: var(--step-3); }
+.sec-head p { color: var(--ink-2); font-size: var(--step-1); max-width: 36em; }
+
+/* the loop */
+.loop { position: relative; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); counter-reset: s; }
+.loop-line { position: absolute; left: 0; right: 0; top: 38px; height: 2px; display: none; }
+.loop-line svg { width: 100%; height: 12px; overflow: visible; }
+.loop-line path { fill: none; stroke: var(--forest); stroke-width: 2; stroke-dasharray: 6 6; }
+@media (min-width: 1040px) { .loop-line { display: block; } }
+.step { position: relative; display: grid; gap: 12px; align-content: start; padding: 22px; border-radius: var(--radius); background: var(--paper); border: 1px solid var(--line); min-width: 0; transition: transform .3s ease; }
+.step:hover { transform: translateY(-3px); }
+.step .n { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--stone); border: 1.5px solid var(--forest); color: var(--forest); font: 600 0.9rem/1 var(--f-mono); position: relative; z-index: 1; }
+.step:last-child .n { background: var(--forest); color: var(--forest-ink); }
+.step h3 { font-size: var(--step-2); }
+.step p { color: var(--ink-2); font-size: 0.98rem; }
+.step .sample { font: 500 0.8rem/1.4 var(--f-mono); color: var(--ink); background: var(--stone); border-radius: 8px; padding: 8px 10px; border: 1px dashed var(--line); }
+
+/* offline */
+.offline { display: grid; gap: 40px; align-items: center; }
+@media (min-width: 920px) { .offline { grid-template-columns: 1fr 1fr; gap: 64px; } }
+.queue { padding: 22px; border-radius: 22px; background: var(--paper); border: 1px solid var(--line); display: grid; gap: 14px; min-width: 0; }
+.queue-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.big-chip { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; font: 500 1rem/1 var(--f-mono); background: var(--amber-soft); color: var(--amber); transition: background .3s, color .3s; }
+.big-chip .sd { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+.big-chip.sent { background: var(--forest-soft); color: var(--forest); }
+.big-chip.sending .sd { animation: blink .6s infinite alternate; }
+.q-bars { display: flex; gap: 3px; align-items: flex-end; height: 18px; }
+.q-bars i { width: 5px; border-radius: 1px; background: var(--line); transition: background .3s; }
+.q-bars i:nth-child(1){height:6px}.q-bars i:nth-child(2){height:10px}.q-bars i:nth-child(3){height:14px}.q-bars i:nth-child(4){height:18px}
+.q-bars.s2 i:nth-child(-n+2), .q-bars.s4 i { background: var(--ink); }
+.q-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.q-list li { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--stone); font-size: 0.95rem; min-width: 0; }
+.q-list li small { display: block; font: 400 0.75rem/1.3 var(--f-mono); color: var(--ink-3); }
+.q-list .st { font: 500 0.75rem/1 var(--f-mono); padding: 6px 9px; border-radius: 999px; background: var(--amber-soft); color: var(--amber); white-space: nowrap; }
+.q-list .st.done { background: var(--forest-soft); color: var(--forest); }
+.q-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.q-actions .btn { min-height: 44px; font-size: 0.9rem; }
+.points { display: grid; gap: 18px; margin-top: 8px; }
+.points div { display: grid; grid-template-columns: 24px 1fr; gap: 12px; }
+.points svg { margin-top: 3px; color: var(--forest); }
+.points b { display: block; font-weight: 600; }
+.points span { color: var(--ink-2); }
+
+/* bento */
+.bento { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .bento { grid-template-columns: repeat(6, 1fr); } .b-lang { grid-column: span 3; } .b-plot { grid-column: span 3; } .b-journal { grid-column: span 4; } .b-sun { grid-column: span 2; } }
+.tile { padding: 26px; border-radius: 22px; background: var(--paper); border: 1px solid var(--line); display: grid; gap: 16px; align-content: start; min-width: 0; overflow: hidden; }
+.tile h3 { font-size: var(--step-2); }
+.tile p { color: var(--ink-2); }
+.lang-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.lang-tiles div { padding: 16px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--stone); display: grid; gap: 6px; min-width: 0; }
+.lang-tiles div.sel { border-color: var(--forest); background: var(--forest-soft); }
+.lang-tiles b { font: 600 1.15rem/1.1 var(--f-display); }
+.lang-tiles span { font: 400 0.8rem/1.35 var(--f-mono); color: var(--ink-2); overflow-wrap: anywhere; }
+.plot-card { border-radius: 16px; background: var(--stone); padding: 16px; display: grid; gap: 4px; position: relative; overflow: hidden; }
+.plot-card svg.outline { position: absolute; right: -10px; top: -6px; width: 150px; opacity: .9; }
+@media (max-width: 1100px) { .plot-card svg.outline { opacity: .25; } }
+.plot-card b { font: 600 1.3rem/1.1 var(--f-display); position: relative; }
+.plot-card .addr { font: 500 0.82rem/1.5 var(--f-mono); color: var(--ink-2); position: relative; }
+.plot-card .not { font: 400 0.78rem/1.4 var(--f-mono); color: var(--ink-3); text-decoration: line-through; position: relative; }
+.j-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.j-table td { padding: 10px 6px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+.j-table td:first-child { font: 400 0.78rem/1.6 var(--f-mono); color: var(--ink-3); white-space: nowrap; }
+.j-table td:last-child { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.j-table .k { font: 500 0.7rem/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; padding: 4px 6px; border-radius: 5px; background: var(--stone); color: var(--ink-2); margin-right: 6px; }
+.table-scroll { overflow-x: auto; }
+.sun-demo { display: grid; gap: 10px; }
+.sun-demo .bigtxt { font: 500 1.125rem/1.3 var(--f-body); }
+.sun-demo .tap { height: 48px; border-radius: 12px; background: var(--forest); color: var(--forest-ink); display: grid; place-items: center; font-weight: 600; position: relative; }
+.sun-demo .tap::after { content: "48dp"; position: absolute; right: -2px; top: -18px; font: 500 0.7rem/1 var(--f-mono); color: var(--ink-3); }
+
+/* promises */
+.promises { background: var(--ink); color: var(--stone); }
+.promises .sec-head p { color: color-mix(in srgb, var(--stone) 70%, var(--ink)); }
+.promise-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); border-top: 1px solid color-mix(in srgb, var(--stone) 22%, var(--ink)); }
+.promise-list li { padding: 28px 22px 28px 0; display: grid; gap: 10px; border-bottom: 1px solid color-mix(in srgb, var(--stone) 22%, var(--ink)); min-width: 0; }
+.promise-list .never { font: 600 var(--step-2)/1.05 var(--f-display); }
+.promise-list .never s { text-decoration-thickness: 3px; text-decoration-color: var(--tomato); color: color-mix(in srgb, var(--stone) 55%, var(--ink)); }
+.promise-list p { color: color-mix(in srgb, var(--stone) 72%, var(--ink)); font-size: 0.98rem; }
+
+/* orgs */
+.org { display: grid; gap: 40px; }
+@media (min-width: 980px) { .org { grid-template-columns: 0.8fr 1.2fr; align-items: center; gap: 56px; } }
+.dash { border-radius: 18px; background: var(--paper); border: 1px solid var(--line); overflow: hidden; min-width: 0; box-shadow: 0 30px 60px -40px rgb(10 20 14 / .45); }
+.dash-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.dash-top b { font: 600 1.05rem/1 var(--f-display); }
+.dash-top .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.dash-top .filters span { font: 500 0.72rem/1 var(--f-mono); padding: 6px 9px; border-radius: 999px; background: var(--stone); color: var(--ink-2); }
+.dash-top .filters span.on { background: var(--ink); color: var(--stone); }
+.dash-rows { display: grid; }
+.drow { display: grid; grid-template-columns: 44px minmax(0,1fr) auto; gap: 14px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); transition: background .3s; }
+.drow:last-child { border-bottom: 0; }
+.drow .thumb { width: 44px; height: 44px; border-radius: 8px; background: #2f4527; display: grid; place-items: center; overflow: hidden; }
+.drow .thumb svg { width: 36px; }
+.drow .who { font-weight: 600; font-size: 0.95rem; }
+.drow .where { font: 400 0.75rem/1.4 var(--f-mono); color: var(--ink-3); }
+.drow .ai { font: 500 0.75rem/1.3 var(--f-mono); color: var(--ink-2); margin-top: 3px; }
+.drow .ai em { font-style: normal; padding: 2px 6px; border-radius: 4px; background: var(--amber-soft); color: var(--amber); }
+.drow .ai em.unsure { background: var(--stone-2); color: var(--ink-2); }
+.decide { display: flex; gap: 6px; }
+.decide button { font: 600 0.78rem/1 var(--f-body); min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1.5px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.decide button.agree { background: var(--forest); color: var(--forest-ink); border-color: var(--forest); }
+.decide button:hover { border-color: var(--ink-3); }
+.drow.done { background: color-mix(in srgb, var(--forest-soft) 55%, transparent); }
+.drow .verdict { font: 600 0.78rem/1 var(--f-mono); color: var(--forest); }
+@media (max-width: 560px) { .drow { grid-template-columns: 44px minmax(0,1fr); } .decide, .drow .verdict { grid-column: 1 / -1; } }
+.org-list { display: grid; gap: 10px; margin-top: 8px; }
+.org-list div { display: flex; gap: 12px; align-items: baseline; }
+.org-list div::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--forest); translate: 0 -2px; }
+
+/* final CTA */
+.final { --cta-bg: #1f5a3a; --cta-fg: #ffffff; --cta-ink: #17201b; position: relative; overflow: hidden; border-radius: 28px; background: var(--cta-bg); color: var(--cta-fg); padding: clamp(28px, 6vw, 72px); display: grid; gap: 28px; }
+.final canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .35; pointer-events: none; }
+.final > * { position: relative; }
+.final h2 { font-size: clamp(2.4rem, 6vw, 4.6rem); line-height: .95; max-width: 12ch; color: var(--cta-fg); }
+.final p { max-width: 34em; font-size: var(--step-1); color: var(--cta-fg); }
+.final .label { color: var(--cta-fg) !important; opacity: 1 !important; }
+.final form { display: grid; gap: 12px; max-width: 640px; }
+.role { display: flex; gap: 8px; flex-wrap: wrap; }
+.role label { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--cta-fg); color: var(--cta-fg); cursor: pointer; font-weight: 500; }
+.role input { accent-color: var(--cta-bg); }
+.role label:has(input:checked) { background: var(--cta-fg); color: var(--cta-bg); border-color: var(--cta-fg); }
+.final .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.final select, .final .phone-field { min-height: 52px; border-radius: 999px; background: #ffffff; border: 1.5px solid #ffffff; color: var(--cta-ink); }
+.final select { flex: 0 1 220px; min-width: 0; padding: 0 16px; font: 500 var(--step-0)/1 var(--f-body); color-scheme: light; }
+.final .phone-field .cc { color: #4f5a53; border-right-color: #dcdbd2; }
+.final .phone-field input { color: var(--cta-ink); }
+.final .phone-field input::placeholder { color: #7d867f; }
+.final .phone-field:focus-within { border-color: #ffffff; box-shadow: 0 0 0 3px rgb(255 255 255 / .35); }
+.final .btn-primary { background: #ffffff; color: var(--cta-bg); }
+.final .form-note, .final .form-note.err, .final .form-note.ok { color: var(--cta-fg); }
+.final .form-note.err { font-weight: 600; }
+.final p.form-note { font-size: var(--step--1); }
+
+footer { padding-block: 56px 0; overflow: hidden; color: var(--ink-2); font-size: 0.9rem; }
+footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: center; }
+.bigmark { margin-top: 40px; padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); line-height: 0; }
+.bigmark svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bigmark text { font-family: var(--f-body); font-weight: 700; font-size: 218px; letter-spacing: -0.035em; }
+.bigmark svg { transform: translateY(14%); transition: transform 1.2s cubic-bezier(.2,.8,.2,1); }
+.bigmark.up svg { transform: translateY(4%); }
+footer .habari { font-family: var(--f-mono); font-size: 0.8rem; color: var(--ink-3); }
+
+/* ---------- screens gallery ---------- */
+.gallery-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
+.gallery-head .sec-head { margin-bottom: 0; }
+.g-nav { display: flex; gap: 8px; }
+.g-nav button { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--paper); color: var(--ink); font: 500 1.2rem/1 var(--f-body); cursor: pointer; }
+.g-nav button:hover { border-color: var(--ink-3); }
+.g-track { display: flex; gap: 28px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 12px max(16px, calc((100vw - var(--max)) / 2 + 32px)) 36px; scrollbar-width: none; cursor: grab; }
+.g-track::-webkit-scrollbar { display: none; }
+.g-track.drag { cursor: grabbing; scroll-snap-type: none; }
+.g-item { flex: none; scroll-snap-align: center; display: grid; gap: 18px; justify-items: center; width: 272px; }
+.g-item:nth-child(odd) .mphone { transform: translateY(18px); }
+.g-cap { display: grid; gap: 4px; text-align: center; max-width: 250px; }
+.g-cap b { font: 600 1.15rem/1.2 var(--f-display); }
+.g-cap span { font-size: 0.9rem; color: var(--ink-2); line-height: 1.45; }
+.g-cap .label { font-size: 0.72rem; }
+.mphone { width: 272px; height: 560px; border-radius: 42px; background: var(--phone); padding: 10px; box-shadow: 0 1px 0 1px color-mix(in srgb, var(--ink) 18%, transparent), 0 34px 60px -32px rgb(10 20 14 / .55); transition: transform .4s cubic-bezier(.2,.8,.2,1); }
+.g-item:hover .mphone { transform: translateY(-8px) rotate(-1deg); }
+.mphone .screen { border-radius: 33px; }
+.mphone .view { opacity: 1; transform: none; }
+.mphone .view.full { top: 40px; bottom: 0; }
+
+/* screen parts */
+.s-h { font: 700 22px/1.05 var(--f-display); margin: 4px 0 4px; }
+.s-sub { font-size: 11.5px; color: #4f5a53; line-height: 1.4; }
+.s-card { background: #fff; border: 1px solid #e2e1d9; border-radius: 14px; padding: 11px 12px; }
+.s-stack { display: grid; gap: 8px; }
+.s-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.s-k { font: 600 10px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: #7d867f; }
+.s-btn { height: 44px; border-radius: 999px; background: #1f5a3a; color: #f3f2ed; display: grid; place-items: center; font: 600 13px/1 var(--f-body); }
+.s-btn.ghost { background: transparent; color: #1f5a3a; box-shadow: inset 0 0 0 1.5px #1f5a3a; }
+.s-pill { display: inline-flex; align-items: center; gap: 5px; font: 600 10px/1 var(--f-mono); padding: 5px 8px; border-radius: 999px; background: #ecebe4; color: #4f5a53; white-space: nowrap; }
+.s-pill.amber { background: #f3e6c4; color: #6e4c0b; }
+.s-pill.green { background: #d9e7da; color: #1f5a3a; }
+
+.lang-big { display: grid; gap: 10px; margin: 14px 0; }
+.lang-big div { border: 2px solid #dcdbd2; border-radius: 16px; padding: 16px 14px; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+.lang-big div.sel { border-color: #1f5a3a; background: #eef4ee; }
+.lang-big b { font: 700 20px/1 var(--f-display); display: block; }
+.lang-big small { font: 400 11px/1.3 var(--f-mono); color: #7d867f; }
+.lang-big .radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #c8c9c0; }
+.lang-big .sel .radio { border: 7px solid #1f5a3a; }
+
+.otp { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin: 12px 0 8px; }
+.otp span { height: 46px; border-radius: 10px; background: #fff; border: 1.5px solid #dcdbd2; display: grid; place-items: center; font: 600 20px/1 var(--f-mono); }
+.otp span.cur { border-color: #1f5a3a; box-shadow: 0 0 0 3px #d9e7da; }
+.tel { height: 48px; border-radius: 12px; background: #fff; border: 1.5px solid #dcdbd2; display: flex; align-items: center; gap: 10px; padding: 0 12px; font: 500 15px/1 var(--f-mono); }
+.tel i { font-style: normal; color: #7d867f; padding-right: 10px; border-right: 1px solid #dcdbd2; }
+
+.weather { background: #1f5a3a; color: #f3f2ed; border-radius: 16px; padding: 12px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; }
+.weather .t { font: 600 30px/1 var(--f-display); }
+.weather small { font: 400 10.5px/1.35 var(--f-mono); opacity: .85; grid-column: 1 / -1; }
+.weather .days { display: flex; gap: 10px; font: 500 10px/1.3 var(--f-mono); opacity: .9; text-align: center; }
+.task-li { display: grid; grid-template-columns: 18px 1fr auto; gap: 9px; align-items: center; font-size: 12px; padding: 9px 0; border-bottom: 1px dashed #dcdbd2; }
+.task-li .cb { width: 18px; height: 18px; border-radius: 5px; border: 2px solid #9aa198; }
+.task-li .cb.done { background: #1f5a3a; border-color: #1f5a3a; }
+.task-li em { font: 500 10px/1 var(--f-mono); color: #7d867f; font-style: normal; }
+.task-li s { color: #7d867f; }
+
+.plot-li { display: grid; grid-template-columns: 54px 1fr; gap: 11px; align-items: center; }
+.plot-li svg { width: 54px; height: 46px; background: #eef0e8; border-radius: 10px; }
+.plot-li b { font: 700 15px/1.1 var(--f-display); display: block; }
+.plot-li small { font: 400 10px/1.4 var(--f-mono); color: #7d867f; display: block; }
+.fab { position: absolute; right: 14px; bottom: 76px; height: 44px; padding: 0 16px; border-radius: 999px; background: #1f5a3a; color: #f3f2ed; display: flex; align-items: center; gap: 6px; font: 600 12.5px/1 var(--f-body); box-shadow: 0 10px 20px -8px rgb(31 90 58 / .6); }
+
+.unsure-ph { height: 150px; flex: none; border-radius: 14px; overflow: hidden; background: radial-gradient(circle at 50% 40%, #556b44, #2a3825); display: grid; place-items: center; position: relative; }
+.unsure-ph svg { width: 46%; filter: blur(2.6px) brightness(.75); rotate: 25deg; }
+.unsure-ph .q { position: absolute; top: 10px; right: 10px; }
+.tips { display: grid; gap: 6px; font-size: 11.5px; color: #4f5a53; }
+.tips div { display: flex; gap: 8px; }
+.tips div::before { content: "→"; color: #1f5a3a; font-weight: 700; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips span { font: 600 11.5px/1 var(--f-body); padding: 9px 12px; border-radius: 999px; border: 1.5px solid #dcdbd2; background: #fff; }
+.chips span.on { background: #17201b; color: #f3f2ed; border-color: #17201b; }
+.fld { display: grid; gap: 5px; }
+.fld .in { height: 44px; border-radius: 12px; background: #fff; border: 1.5px solid #dcdbd2; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font: 500 14px/1 var(--f-mono); }
+.fld .in.focus { border-color: #1f5a3a; }
+.fld .in small { font: 400 11px/1 var(--f-mono); color: #7d867f; }
+.lock { font: 400 10px/1.4 var(--f-mono); color: #7d867f; display: flex; gap: 6px; align-items: center; }
+
+.prof-top { display: flex; align-items: center; gap: 12px; }
+.prof-top .av { width: 48px; height: 48px; border-radius: 50%; background: #d5e1d6; color: #1f5a3a; display: grid; place-items: center; font: 700 17px/1 var(--f-mono); }
+.prof-top b { font: 700 18px/1.1 var(--f-display); display: block; }
+.prof-top small { font: 400 10.5px/1.3 var(--f-mono); color: #7d867f; }
+.set-li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 11px 0; border-bottom: 1px solid #ecebe4; font-size: 12.5px; }
+.set-li span:last-child { font: 500 11px/1 var(--f-mono); color: #4f5a53; }
+.toggle { width: 34px; height: 20px; border-radius: 999px; background: #1f5a3a; position: relative; }
+.toggle::after { content: ""; position: absolute; right: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.export { margin-top: 10px; border: 1.5px dashed #1f5a3a; border-radius: 14px; padding: 11px 12px; display: grid; gap: 4px; font-size: 11.5px; color: #4f5a53; }
+.export b { color: #1f5a3a; font: 700 14px/1.1 var(--f-display); }
+
+/* reveal on scroll: visible at rest, small lift only */
+.reveal { transition: transform .7s cubic-bezier(.2,.8,.2,1); }
+.reveal.pre { transform: translateY(18px); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  .reveal.pre { transform: none; }
+}
+</style>
+
+<!-- shared leaf art, reused by every phone and dashboard thumbnail -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ssmark" viewBox="0 0 48 48"><rect width="48" height="48" rx="12.96" fill="#0f3d26"/><g transform="translate(24 24) scale(0.66) translate(-24 -24)" fill="none" stroke="#c4ef5a" stroke-width="4"><path d="M27.69 10.92A4.5 4.5 0 1 0 24 18A16.5 16.5 0 1 1 10.48 43.96"/><path d="M32.6 7.48A10.5 10.5 0 1 0 24 24A10.5 10.5 0 1 1 15.4 40.52"/><path d="M37.52 4.04A16.5 16.5 0 1 0 24 30A4.5 4.5 0 1 1 20.31 37.08"/></g></symbol>
+    <radialGradient id="lg" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#7aa65a"/><stop offset="1" stop-color="#3f6a2f"/></radialGradient>
+    <radialGradient id="halo"><stop offset="0.45" stop-color="#c9b048" stop-opacity=".95"/><stop offset="1" stop-color="#c9b048" stop-opacity="0"/></radialGradient>
+    <g id="leaf">
+      <path d="M100 8 C 140 30, 178 82, 176 140 C 174 196, 140 238, 100 254 C 60 238, 26 196, 24 140 C 22 82, 60 30, 100 8 Z" fill="url(#lg)"/>
+      <path d="M100 18 C 98 90, 100 170, 100 250" stroke="#d7e4c4" stroke-width="3" fill="none" opacity=".8"/>
+      <g stroke="#cfe0b8" stroke-width="1.6" fill="none" opacity=".6">
+        <path d="M100 60 Q 125 60 150 46"/><path d="M100 95 Q 135 95 165 80"/><path d="M100 132 Q 140 134 172 124"/><path d="M100 170 Q 135 176 160 172"/><path d="M100 206 Q 125 214 142 214"/>
+        <path d="M100 60 Q 75 60 50 46"/><path d="M100 95 Q 65 95 35 80"/><path d="M100 132 Q 60 134 28 124"/><path d="M100 170 Q 65 176 40 172"/><path d="M100 206 Q 75 214 58 214"/>
+      </g>
+    </g>
+    <g id="spots">
+      <circle cx="140" cy="118" r="26" fill="url(#halo)"/>
+      <circle cx="140" cy="118" r="14" fill="#6b4a2b"/><circle cx="140" cy="118" r="9.5" fill="none" stroke="#3e2a17" stroke-width="1.6"/><circle cx="140" cy="118" r="4.5" fill="none" stroke="#3e2a17" stroke-width="1.4"/>
+      <circle cx="70" cy="168" r="20" fill="url(#halo)"/>
+      <circle cx="70" cy="168" r="10" fill="#6b4a2b"/><circle cx="70" cy="168" r="6" fill="none" stroke="#3e2a17" stroke-width="1.4"/>
+      <circle cx="118" cy="200" r="13" fill="url(#halo)"/>
+      <circle cx="118" cy="200" r="6" fill="#6b4a2b"/>
+    </g>
+  </defs>
+</svg>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="shambasense home">
+      <svg width="32" height="32" aria-hidden="true"><use href="#ssmark"/></svg>
+      shambasense
+    </a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#screens">The app</a>
+      <a href="#offline">Offline</a>
+      <a href="#farm">Your farm</a>
+      <a href="#orgs">For organisations</a>
+    </nav>
+    <a class="btn btn-primary" href="#join">Join the waitlist</a>
+  </div>
+</header>
+
+<main id="top">
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <canvas class="contours" id="contours" aria-hidden="true"></canvas>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <div class="eyebrow">
+          <span class="dot-live" aria-hidden="true"></span>
+          <span class="label hero-swap" data-i18n="eyebrow">Android · English &amp; Kiswahili · Works with no signal</span>
+        </div>
+
+        <h1 class="headline hero-swap" id="headline" aria-live="polite">
+          <span class="l1"><span class="w">Signal</span> <span class="w">can</span> <span class="w">wait.</span></span>
+          <span class="l2"><span class="w">Your</span> <span class="w shamba">shamba<svg viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 20 C 70 6, 150 26, 296 10"/></svg></span> <span class="w">can't.</span></span>
+        </h1>
+
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" data-lang="en" aria-pressed="true">English</button>
+          <button type="button" data-lang="sw" aria-pressed="false">Kiswahili</button>
+        </div>
+
+        <p class="lede hero-swap" data-i18n="lede">Snap a sick tomato leaf and get an <strong>honest first look</strong>. Follow the problem with a real agronomist until it's fixed. Your farm records live on your phone and send themselves when the network comes back.</p>
+
+        <form class="waitlist" id="heroForm" novalidate>
+          <label class="label" for="heroPhone">Get one SMS when the pilot opens near you</label>
+          <div class="field-row">
+            <div class="phone-field"><span class="cc">+254</span><input id="heroPhone" name="phone" inputmode="tel" autocomplete="tel-national" placeholder="712 345 678" aria-describedby="heroNote"></div>
+            <button class="btn btn-primary" type="submit">Join the waitlist</button>
+          </div>
+          <p class="form-note" id="heroNote">Kenyan mobile numbers only. Preview page: numbers are not saved yet.</p>
+        </form>
+      </div>
+
+      <div class="stage-col">
+        <div class="stage" id="stage">
+          <div class="plot-tags" aria-hidden="true">
+            <span class="plot-tag" style="left:2%;top:8%">PLOT A · NYANYA · 0.25 AC</span>
+            <span class="plot-tag" style="right:0;top:30%">PLOT B · SUKUMA WIKI</span>
+            <span class="plot-tag" style="left:6%;bottom:10%">MWEA WEST · KIRINYAGA</span>
+          </div>
+
+          <span class="note-tag" data-at="0" style="right:calc(50% + 120px);top:22%">Tomato gets a fast AI first look</span>
+          <span class="note-tag" data-at="1" style="left:calc(50% + 60px);top:44%">"Likely", never a fake 87%</span>
+          <span class="note-tag" data-at="2" style="right:calc(50% + 120px);top:12%">Never says "sent" until it is</span>
+          <span class="note-tag" data-at="3" style="left:calc(50% + 60px);top:30%">A real agronomist replies</span>
+          <span class="note-tag" data-at="4" style="right:calc(50% + 120px);bottom:24%">Closed only when it's done</span>
+
+          <div class="phone" id="phone" data-step="0" data-signal="0" role="img" aria-label="ShambaSense app demo: a tomato leaf is checked, the result says likely early blight, the record waits for signal, an agronomist agrees, and the issue is closed in the plot journal.">
+            <div class="screen">
+              <div class="notch"></div>
+              <div class="status"><span>09:41</span><span class="right"><span class="bars"><i></i><i></i><i></i><i></i></span></span></div>
+              <div class="app-head"><b id="appTitle">Check</b><span class="sync-chip" id="chip"><span class="sd"></span><span id="chipText">All sent</span></span></div>
+
+              <!-- 0 camera -->
+              <div class="view on" data-view="0">
+                <div class="cam">
+                  <span class="crop">Crop: Tomato</span>
+                  <svg class="leaf" viewBox="0 0 200 262"><use href="#leaf"/><use href="#spots"/></svg>
+                  <div class="brackets"><i></i><i></i><i></i><i></i></div>
+                  <div class="scan"></div>
+                  <div class="hint">HOLD STEADY · GOOD LIGHT</div>
+                  <div class="shutter"></div>
+                </div>
+              </div>
+
+              <!-- 1 result -->
+              <div class="view" data-view="1">
+                <div class="r-title">Lower tomato plot · today</div>
+                <div class="compare">
+                  <figure><div class="ph"><svg viewBox="0 0 200 262"><use href="#leaf"/><use href="#spots"/></svg></div><figcaption>Your photo</figcaption></figure>
+                  <figure><div class="ph" style="background:#34492c"><svg viewBox="0 0 200 262" style="rotate:-14deg"><use href="#leaf"/><g transform="translate(-14 10)"><use href="#spots"/></g></svg></div><figcaption>Reviewed reference</figcaption></figure>
+                </div>
+                <div class="likely">
+                  <span class="word">● Likely</span>
+                  <h4>Early blight</h4>
+                  <p>Brown spots with rings and a yellow edge, starting on lower leaves. Compare with the reference before acting.</p>
+                </div>
+                <div class="ask">Ask an agronomist</div>
+                <div class="ask alt">Not sure? Retake photo</div>
+              </div>
+
+              <!-- 2 waiting / sending: reuses result card, compact -->
+              <div class="view" data-view="2">
+                <div class="r-title">Saved on this phone</div>
+                <div class="likely" style="margin-top:0">
+                  <span class="word">● Likely</span>
+                  <h4>Early blight</h4>
+                  <p>Sent to your co-op agronomist as soon as there is signal. Nothing is lost if you close the app.</p>
+                </div>
+                <div class="plot-head" style="margin-top:10px">
+                  <span>QUEUE</span>
+                  <b id="qline">Waiting to send · 1</b>
+                  <span id="qsub">Photo shrunk to save data</span>
+                </div>
+              </div>
+
+              <!-- 3 agronomist -->
+              <div class="view" data-view="3">
+                <div class="r-title">Issue #24 · Early blight</div>
+                <div class="thread">
+                  <div class="bubble">
+                    <div class="who"><span class="av">WN</span><span>Wanjiru N.<span class="meta">Agronomist · Mwea Growers Co-op</span></span></div>
+                    <span class="agree">✓ Agrees with first look</span>
+                    <div>Remove the spotted lower leaves and burn them. Water the soil, not the leaves. Send a new photo in 3 days.</div>
+                    <div class="sw" style="margin-top:6px">Ondoa majani ya chini yenye madoa.</div>
+                  </div>
+                  <div class="task"><span class="box"></span><span>Remove spotted lower leaves<small>Plot A · due Thu</small></span></div>
+                </div>
+              </div>
+
+              <!-- 4 journal -->
+              <div class="view" data-view="4">
+                <div class="plot-head"><b>Plot A · Nyanya</b><span>Mwea West ward · Kirinyaga · 0.25 ac</span></div>
+                <ul class="entries">
+                  <li class="new"><i></i><span><b>Issue closed</b><br>Lower leaves removed</span><em>Thu</em></li>
+                  <li><i></i><span>Crop Check<br>Early blight, agronomist agreed</span><em>Mon</em></li>
+                  <li><i></i><span>Applied manure<br>4 wheelbarrows</span><em>12 Oct</em></li>
+                  <li><i></i><span>Transplanted<br>400 seedlings</span><em>28 Sep</em></li>
+                </ul>
+              </div>
+
+              <div class="tabs" aria-hidden="true">
+                <span data-tab="Home"><i></i>Home</span>
+                <span data-tab="Shamba"><i></i>Shamba</span>
+                <span data-tab="Check" class="on"><i></i>Check</span>
+                <span data-tab="Journal"><i></i>Journal</span>
+                <span data-tab="Profile"><i></i>Profile</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="rail" id="rail" role="group" aria-label="Demo steps">
+          <button type="button" data-go="0" class="on">Photo</button>
+          <button type="button" data-go="1">Answer</button>
+          <button type="button" data-go="2">Offline</button>
+          <button type="button" data-go="3">Agronomist</button>
+          <button type="button" data-go="4">Closed</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= READOUT ================= -->
+  <div class="readout">
+    <div class="wrap">
+      <div class="cell"><b>Tomato AI, any crop reviewed</b><span>Kale, maize or beans go straight to an agronomist</span></div>
+      <div class="cell"><b>Works with zero bars</b><span>Records save on the phone first</span></div>
+      <div class="cell"><b>English and Kiswahili</b><span>Chosen before you even sign up</span></div>
+      <div class="cell"><b>Light on data</b><span>Photos are shrunk before they upload</span></div>
+    </div>
+  </div>
+
+  <!-- ================= THE LOOP ================= -->
+  <section class="block" id="how">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="label">How it works</span>
+        <h2>From a sick leaf to a closed issue</h2>
+        <p>Most crop apps give you a name and stop there. ShambaSense stays with the problem until the work on your plot is done.</p>
+      </div>
+      <div class="loop">
+        <div class="loop-line" aria-hidden="true"><svg viewBox="0 0 1000 12" preserveAspectRatio="none"><path d="M60 6 H 940"/></svg></div>
+        <article class="step reveal">
+          <span class="n">1</span>
+          <h3>Take a photo</h3>
+          <p>Point the camera at the leaf. Tomato gets a fast AI first look. Every other crop goes to an agronomist.</p>
+          <div class="sample">Crop: Tomato · Plot A</div>
+        </article>
+        <article class="step reveal">
+          <span class="n">2</span>
+          <h3>Get an honest answer</h3>
+          <p>You see "Likely" or "Not sure", never a made-up percentage. Your photo sits beside a reviewed reference so you can compare.</p>
+          <div class="sample">● Likely · Early blight</div>
+        </article>
+        <article class="step reveal">
+          <span class="n">3</span>
+          <h3>Ask a real agronomist</h3>
+          <p>An agronomist from your co-op or partner reviews the photo and tells you what to do on your plot.</p>
+          <div class="sample">✓ Wanjiru agrees</div>
+        </article>
+        <article class="step reveal">
+          <span class="n">4</span>
+          <h3>Close it in your journal</h3>
+          <p>The advice becomes a task. When you finish it, the issue closes and the record stays on the plot's history.</p>
+          <div class="sample">Issue #24 closed · Thu</div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SCREENS GALLERY ================= -->
+  <section class="block" id="screens" style="padding-top:0">
+    <div class="wrap gallery-head">
+      <div class="sec-head reveal">
+        <span class="label">Inside the app</span>
+        <h2>Five tabs. Everything a farmer needs, nothing they don't.</h2>
+        <p>Home, Shamba, Check, Journal and Profile. Drag or use the arrows to look around.</p>
+      </div>
+      <div class="g-nav"><button type="button" id="gPrev" aria-label="Previous screen">←</button><button type="button" id="gNext" aria-label="Next screen">→</button></div>
+    </div>
+    <div class="g-track" id="gTrack" tabindex="0" aria-label="App screens">
+
+      <!-- 1 language -->
+      <figure class="g-item" style="margin:0">
+        <div class="mphone"><div class="screen">
+          <div class="notch"></div>
+          <div class="status"><span>08:02</span><span class="bars"><i></i><i></i><i></i><i></i></span></div>
+          <div class="view full" style="padding-top:18px">
+            <svg width="40" height="40" aria-hidden="true"><use href="#ssmark"/></svg>
+            <div class="s-h" style="margin-top:14px">Karibu.<br>Welcome.</div>
+            <p class="s-sub">Chagua lugha · Choose your language</p>
+            <div class="lang-big">
+              <div class="sel"><span><b>Kiswahili</b><small>Endelea kwa Kiswahili</small></span><span class="radio"></span></div>
+              <div><span><b>English</b><small>Continue in English</small></span><span class="radio"></span></div>
+            </div>
+            <p class="s-sub" style="font-size:10.5px">Unaweza kubadilisha baadaye kwenye Wasifu.</p>
+            <div class="s-btn" style="position:absolute;left:14px;right:14px;bottom:22px">Endelea</div>
+          </div>
+        </div></div>
+        <figcaption class="g-cap"><span class="label">Before sign-up</span><b>Language comes first</b><span>Kiswahili or English is chosen on the very first screen.</span></figcaption>
+      </figure>
+
+      <!-- 3 home -->
+      <figure class="g-item" style="margin:0">
+        <div class="mphone"><div class="screen">
+          <div class="notch"></div>
+          <div class="status"><span>07:15</span><span class="bars"><i style="background:#17201b"></i><i></i><i></i><i></i></span></div>
+          <div class="app-head"><b>Habari, Grace</b><span class="sync-chip waiting"><span class="sd"></span>Waiting · 2</span></div>
+          <div class="view s-stack" style="align-content:start">
+            <div class="weather"><span><span class="t">24°</span></span><span class="days"><span>Wed<br>☀</span><span>Thu<br>☂</span><span>Fri<br>☂</span></span><small>Mwea West · Rain likely Thu, keep tomato leaves dry</small></div>
+            <div class="s-card" style="padding:9px 12px">
+              <div class="s-row"><span class="s-k">Open issue</span><span class="s-pill green">Agronomist replied</span></div>
+              <div style="font:700 15px/1.2 var(--f-display);margin-top:6px">Early blight · Plot A</div>
+            </div>
+            <div>
+              <div class="s-k" style="margin:4px 0 2px">Today</div>
+              <div class="task-li"><span class="cb"></span><span>Remove spotted leaves</span><em>Plot A</em></div>
+              <div class="task-li"><span class="cb"></span><span>Stake new seedlings</span><em>Plot A</em></div>
+              <div class="task-li"><span class="cb done"></span><s>Water kale</s><em>Plot B</em></div>
+            </div>
+          </div>
+          <div class="tabs"><span class="on"><i></i>Home</span><span><i></i>Shamba</span><span><i></i>Check</span><span><i></i>Journal</span><span><i></i>Profile</span></div>
+        </div></div>
+        <figcaption class="g-cap"><span class="label">Home</span><b>Today on your farm</b><span>Local weather, open issues and the day's tasks in one glance.</span></figcaption>
+      </figure>
+
+      <!-- 4 shamba -->
+      <figure class="g-item" style="margin:0">
+        <div class="mphone"><div class="screen">
+          <div class="notch"></div>
+          <div class="status"><span>07:16</span><span class="bars"><i style="background:#17201b"></i><i></i><i></i><i></i></span></div>
+          <div class="app-head"><b>Shamba la Mama</b><span class="sync-chip sent"><span class="sd"></span>All sent</span></div>
+          <div class="view s-stack" style="align-content:start">
+            <span class="s-sub" style="font-family:var(--f-mono);font-size:10.5px">KIRINYAGA · MWEA WEST · 0.6 AC</span>
+            <div class="s-card plot-li"><svg viewBox="0 0 54 46" aria-hidden="true"><path d="M8 12 L32 6 L48 18 L42 40 L14 38 Z" fill="#d5e1d6" stroke="#1f5a3a" stroke-width="1.5"/><circle cx="34" cy="16" r="3" fill="#b8432c"/></svg><span><b>Plot A · Nyanya</b><small>Tomato · 0.25 ac · 1 open issue</small></span></div>
+            <div class="s-card plot-li"><svg viewBox="0 0 54 46" aria-hidden="true"><path d="M6 8 L46 10 L44 38 L10 36 Z" fill="#d5e1d6" stroke="#1f5a3a" stroke-width="1.5"/></svg><span><b>Plot B · Sukuma</b><small>Kale · 0.15 ac · harvest weekly</small></span></div>
+            <div class="s-card plot-li"><svg viewBox="0 0 54 46" aria-hidden="true"><path d="M10 6 L44 14 L40 40 L6 32 Z" fill="#efe2c2" stroke="#9a6a12" stroke-width="1.5" stroke-dasharray="3 3"/></svg><span><b>Shamba ya juu</b><small>Fallow · 0.2 ac · maize in March</small></span></div>
+          </div>
+          <div class="fab">＋ Add plot</div>
+          <div class="tabs"><span><i></i>Home</span><span class="on"><i></i>Shamba</span><span><i></i>Check</span><span><i></i>Journal</span><span><i></i>Profile</span></div>
+        </div></div>
+        <figcaption class="g-cap"><span class="label">Shamba</span><b>Plots with names you use</b><span>Every plot has a crop, a size and its own history.</span></figcaption>
+      </figure>
+
+      <!-- 5 not sure -->
+      <figure class="g-item" style="margin:0">
+        <div class="mphone"><div class="screen">
+          <div class="notch"></div>
+          <div class="status"><span>17:48</span><span class="bars"><i style="background:#17201b"></i><i style="background:#17201b"></i><i style="background:#17201b"></i><i></i></span></div>
+          <div class="app-head"><b>Check</b><span class="sync-chip sent"><span class="sd"></span>All sent</span></div>
+          <div class="view s-stack" style="align-content:start">
+            <div class="unsure-ph"><svg viewBox="0 0 200 262"><use href="#leaf"/><use href="#spots"/></svg><span class="s-pill q">Too dark, blurry</span></div>
+            <div class="s-card">
+              <span class="s-pill">○ Not sure</span>
+              <div style="font:700 19px/1.1 var(--f-display);margin:7px 0 4px">We can't tell from this photo</div>
+              <div class="tips"><div>Retake in daylight</div><div>Fill the frame with one leaf</div></div>
+            </div>
+            <div class="s-btn">Retake photo</div>
+            <div class="s-btn ghost">Send to agronomist anyway</div>
+          </div>
+          <div class="tabs"><span><i></i>Home</span><span><i></i>Shamba</span><span class="on"><i></i>Check</span><span><i></i>Journal</span><span><i></i>Profile</span></div>
+        </div></div>
+        <figcaption class="g-cap"><span class="label">Check</span><b>Allowed to say "Not sure"</b><span>A bad photo gets honest advice to retake, never a guess.</span></figcaption>
+      </figure>
+
+      <!-- 6 journal entry -->
+      <figure class="g-item" style="margin:0">
+        <div class="mphone"><div class="screen">
+          <div class="notch"></div>
+          <div class="status"><span>12:30</span><span class="bars"><i></i><i></i><i></i><i></i></span></div>
+          <div class="app-head"><b>New entry</b><span class="sync-chip waiting"><span class="sd"></span>Waiting · 1</span></div>
+          <div class="view s-stack" style="align-content:start">
+            <div class="chips"><span>Work</span><span>Input</span><span>Expense</span><span>Harvest</span><span class="on">Sale</span></div>
+            <div class="fld"><span class="s-k">Plot</span><div class="in">Plot A · Nyanya <small>▾</small></div></div>
+            <div class="fld"><span class="s-k">What you sold</span><div class="in">6 <small>crates</small></div></div>
+            <div class="fld"><span class="s-k">Amount received</span><div class="in focus"><small>KSh</small> 9,000</div></div>
+            <span class="lock">🔒 Saved entries can't be edited, only corrected with a new one.</span>
+            <div class="s-btn">Save entry</div>
+          </div>
+          <div class="tabs"><span><i></i>Home</span><span><i></i>Shamba</span><span><i></i>Check</span><span class="on"><i></i>Journal</span><span><i></i>Profile</span></div>
+        </div></div>
+        <figcaption class="g-cap"><span class="label">Journal</span><b>Log a sale with no signal</b><span>Work, inputs, costs, harvests and sales in a few taps.</span></figcaption>
+      </figure>
+
+    </div>
+  </section>
+
+  <!-- ================= OFFLINE ================= -->
+  <section class="block" id="offline" style="padding-top:0">
+    <div class="wrap offline">
+      <div class="reveal">
+        <div class="sec-head" style="margin-bottom:24px">
+          <span class="label">Offline first</span>
+          <h2>No signal on the shamba? Keep working.</h2>
+          <p>Everything you record saves on your phone first. When the network comes back, it sends itself, and the app tells you exactly what is still waiting.</p>
+        </div>
+        <div class="points">
+          <div><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><p><b>Every screen shows a sync chip</b><span>"Waiting to send · 3" means three records are still on the phone. You always know.</span></p></div>
+          <div><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><p><b>A check taken offline stays queued</b><span>The app never guesses an answer without signal. It sends the photo when it can.</span></p></div>
+          <div><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><p><b>Built for everyday phones</b><span>Designed for Tecno and Itel class Android phones and costly data bundles.</span></p></div>
+        </div>
+      </div>
+
+      <div class="queue reveal" id="queue">
+        <div class="queue-top">
+          <span class="big-chip" id="bigChip"><span class="sd"></span><span id="bigChipText">Waiting to send · 3</span></span>
+          <span class="q-bars" id="qBars" aria-label="Signal strength"><i></i><i></i><i></i><i></i></span>
+        </div>
+        <ul class="q-list" id="qList">
+          <li><span>Crop Check · Plot A<small>Photo · tomato leaf</small></span><span class="st">Waiting</span></li>
+          <li><span>Sold 6 crates<small>Journal · KSh 9,000</small></span><span class="st">Waiting</span></li>
+          <li><span>Applied manure<small>Journal · Plot B</small></span><span class="st">Waiting</span></li>
+        </ul>
+        <div class="q-actions">
+          <button class="btn btn-primary" type="button" id="signalBtn">Bring the signal back</button>
+          <button class="btn btn-ghost" type="button" id="resetBtn">Go offline again</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= YOUR FARM ================= -->
+  <section class="block" id="farm" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="label">Made for the shamba</span>
+        <h2>Your plots, your language, your records</h2>
+        <p>ShambaSense knows Kenyan farms by county, ward and the names you already use for your plots.</p>
+      </div>
+      <div class="bento">
+        <article class="tile b-lang reveal">
+          <h3>Kiswahili from the first screen</h3>
+          <p>Pick your language before you sign up. Every screen is laid out to fit longer Kiswahili words.</p>
+          <div class="lang-tiles">
+            <div><b>English</b><span>Waiting to send · 3</span></div>
+            <div class="sel"><b>Kiswahili</b><span>Inasubiri kutumwa · 3</span></div>
+          </div>
+        </article>
+        <article class="tile b-plot reveal">
+          <h3>Named plots, real places</h3>
+          <p>Sign in with your +254 number and a code by SMS. Then add your plots the way you talk about them.</p>
+          <div class="plot-card">
+            <svg class="outline" viewBox="0 0 150 110" aria-hidden="true"><path d="M20 30 L 90 12 L 138 44 L 118 96 L 40 92 Z" fill="none" stroke="var(--forest)" stroke-width="2" stroke-dasharray="5 5"/><path d="M60 22 L 70 94" stroke="var(--forest)" stroke-width="1.5" stroke-dasharray="3 5" fill="none"/></svg>
+            <b>Shamba la Mama</b>
+            <span class="addr">Kirinyaga County · Mwea West ward<br>Plot A Nyanya · Plot B Sukuma</span>
+            <span class="not">ZIP CODE · LOCATION A</span>
+          </div>
+        </article>
+        <article class="tile b-journal reveal">
+          <h3>A journal for every plot</h3>
+          <p>Log work, inputs, costs, harvests and sales. Entries can't be quietly edited later, so your record is one a buyer or SACCO can trust.</p>
+          <div class="table-scroll">
+            <table class="j-table">
+              <tbody>
+                <tr><td>28 Sep</td><td><span class="k">Work</span>Transplanted 400 seedlings</td><td>Plot A</td></tr>
+                <tr><td>12 Oct</td><td><span class="k">Input</span>Manure, 4 wheelbarrows</td><td>KSh 1,200</td></tr>
+                <tr><td>20 Oct</td><td><span class="k">Issue</span>Early blight, closed</td><td>Plot A</td></tr>
+                <tr><td>02 Dec</td><td><span class="k">Sale</span>6 crates to Mwea market</td><td>KSh 9,000</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+        <article class="tile b-sun reveal">
+          <h3>Readable in full sun</h3>
+          <p>Large text and big buttons for use in the field.</p>
+          <div class="sun-demo">
+            <span class="bigtxt">18px text, high contrast</span>
+            <span class="tap">Save entry</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PROMISES ================= -->
+  <section class="block promises">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="label" style="color:inherit;opacity:.7">Our promises</span>
+        <h2>What ShambaSense will never do</h2>
+        <p>Farmers lose money when an app sounds more sure than it is. These rules are built into the product.</p>
+      </div>
+      <ul class="promise-list">
+        <li class="reveal"><span class="never">Show a <s>94% sure</s></span><p>We use plain words like Likely and Not sure, and the app is allowed to say it doesn't know.</p></li>
+        <li class="reveal"><span class="never">Sell you a <s>spray</s></span><p>ShambaSense never recommends a pesticide product or dose. That decision belongs to a qualified agronomist.</p></li>
+        <li class="reveal"><span class="never">Say <s>synced</s> too early</span><p>Nothing shows as sent until our server has it. Waiting records are always counted on screen.</p></li>
+        <li class="reveal"><span class="never">Guess <s>offline</s></span><p>A check taken with no signal waits in the queue. It never gets a made-up answer.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= ORGS ================= -->
+  <section class="block" id="orgs">
+    <div class="wrap org">
+      <div class="reveal">
+        <div class="sec-head" style="margin-bottom:20px">
+          <span class="label">For co-ops, NGOs and agribusiness</span>
+          <h2>Every flagged leaf from your farmers, in one queue</h2>
+          <p>Your agronomists see each photo next to the AI's first look, then agree, adjust or reject it in one tap. The farmer gets the answer on their phone.</p>
+        </div>
+        <div class="org-list">
+          <div>Sorted by urgency, filtered by county and ward</div>
+          <div>Every decision logged with who made it and which model version</div>
+          <div>Input and spray records per plot, entered by the farmer</div>
+        </div>
+        <div style="margin-top:28px"><a class="btn btn-ghost" href="#join" data-role="org">Request a pilot</a></div>
+      </div>
+
+      <div class="dash reveal" aria-label="Example review queue">
+        <div class="dash-top">
+          <b>Review queue · Mwea Growers</b>
+          <div class="filters"><span class="on">Open · 3</span><span>Kirinyaga</span><span>Tomato</span></div>
+        </div>
+        <div class="dash-rows" id="dashRows">
+          <div class="drow">
+            <span class="thumb"><svg viewBox="0 0 200 262"><use href="#leaf"/><use href="#spots"/></svg></span>
+            <div style="min-width:0"><div class="who">Grace M. · Plot A</div><div class="where">Mwea West · 2 h ago</div><div class="ai">AI: <em>Likely</em> early blight</div></div>
+            <div class="decide"><button class="agree" type="button">Agree</button><button type="button">Adjust</button><button type="button">Reject</button></div>
+          </div>
+          <div class="drow">
+            <span class="thumb" style="background:#3a3f26"><svg viewBox="0 0 200 262" style="rotate:20deg"><use href="#leaf"/></svg></span>
+            <div style="min-width:0"><div class="who">Peter K. · Shamba ya juu</div><div class="where">Tebere · 5 h ago</div><div class="ai">AI: <em class="unsure">Not sure</em> · needs review</div></div>
+            <div class="decide"><button class="agree" type="button">Agree</button><button type="button">Adjust</button><button type="button">Reject</button></div>
+          </div>
+          <div class="drow">
+            <span class="thumb" style="background:#41522b"><svg viewBox="0 0 200 262" style="rotate:-10deg"><use href="#leaf"/></svg></span>
+            <div style="min-width:0"><div class="who">Amina W. · Sukuma plot</div><div class="where">Mutithi · yesterday</div><div class="ai">Kale · sent to agronomist</div></div>
+            <div class="decide"><button class="agree" type="button">Agree</button><button type="button">Adjust</button><button type="button">Reject</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= JOIN ================= -->
+  <section class="block" id="join" style="padding-top:0">
+    <div class="wrap">
+      <div class="final reveal">
+        <canvas id="contours2" aria-hidden="true"></canvas>
+        <span class="label" style="color:inherit;opacity:.8">Pilot opening soon</span>
+        <h2>Be the first in your county.</h2>
+        <p>We're starting with tomato growers and the co-ops that support them. Leave your number and we'll send one SMS when ShambaSense reaches you.</p>
+        <form id="joinForm" novalidate>
+          <div class="role" role="radiogroup" aria-label="I am">
+            <label><input type="radio" name="role" value="farmer" id="roleFarmer" checked> I'm a farmer</label>
+            <label><input type="radio" name="role" value="org" id="roleOrg"> I'm an organisation</label>
+          </div>
+          <div class="row">
+            <select id="county" aria-label="County"></select>
+            <div class="phone-field" style="flex:1 1 240px"><span class="cc">+254</span><input id="joinPhone" inputmode="tel" autocomplete="tel-national" placeholder="712 345 678" aria-label="Phone number" aria-describedby="joinNote"></div>
+            <button class="btn btn-primary" type="submit">Join</button>
+          </div>
+          <p class="form-note" id="joinNote">Preview page: numbers are not saved yet.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><b style="color:var(--ink);letter-spacing:-0.035em">shambasense</b> by Nexflora Tech · © 2026</span>
+    <span class="habari">Mkulima ni mfalme.</span>
+  </div>
+  <div class="bigmark" aria-hidden="true">
+    <svg viewBox="0 0 1290 200" preserveAspectRatio="xMidYMax meet">
+      <defs>
+        <linearGradient id="bmg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" style="stop-color: var(--ink); stop-opacity: .9"/>
+          <stop offset="1" style="stop-color: var(--ink); stop-opacity: .08"/>
+        </linearGradient>
+      </defs>
+      <text x="645" y="190" text-anchor="middle" textLength="1280" lengthAdjust="spacing" fill="url(#bmg)">shambasense</text>
+    </svg>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- nav border on scroll ---------- */
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 8), { passive: true });
+
+  /* ---------- contour canvas (value-noise isolines, marching squares) ---------- */
+  function makeNoise(seed) {
+    const p = new Uint8Array(512); const a = [...Array(256).keys()];
+    let s = seed; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    for (let i = 255; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    for (let i = 0; i < 512; i++) p[i] = a[i & 255];
+    const fade = t => t * t * (3 - 2 * t);
+    const v = (x, y) => p[(p[x & 255] + y) & 511] / 255;
+    return (x, y) => {
+      const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+      const u = fade(xf), w = fade(yf);
+      const a0 = v(xi, yi), a1 = v(xi + 1, yi), b0 = v(xi, yi + 1), b1 = v(xi + 1, yi + 1);
+      return (a0 + (a1 - a0) * u) * (1 - w) + (b0 + (b1 - b0) * u) * w;
+    };
+  }
+  function contours(canvas, opts) {
+    const ctx = canvas.getContext('2d'); const n = makeNoise(opts.seed || 7);
+    let W, H, cols, rows, field, t = 0, visible = true, raf;
+    const cell = opts.cell || 16, levels = opts.levels || 9;
+    function size() {
+      const r = canvas.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+      W = r.width; H = r.height; canvas.width = W * d; canvas.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+      cols = Math.ceil(W / cell) + 1; rows = Math.ceil(H / cell) + 1; field = new Float32Array(cols * rows);
+    }
+    function color() { return opts.color ? opts.color() : 'rgb(' + getComputedStyle(document.documentElement).getPropertyValue('--contour').trim().split(' ').join(',') + ')'; }
+    function draw() {
+      const sc = opts.scale || 0.012;
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        const x = i * cell * sc + t * 0.6, y = j * cell * sc - t * 0.25;
+        field[j * cols + i] = n(x, y) * 0.65 + n(x * 2.1 + 40, y * 2.1) * 0.35;
+      }
+      ctx.clearRect(0, 0, W, H); ctx.strokeStyle = color(); ctx.lineWidth = 1;
+      for (let L = 1; L <= levels; L++) {
+        const iso = 0.18 + L * (0.64 / levels);
+        ctx.globalAlpha = (L % 3 === 0 ? 0.55 : 0.28) * (opts.alpha || 1);
+        ctx.lineWidth = L % 3 === 0 ? 1.4 : 0.9;
+        ctx.beginPath();
+        for (let j = 0; j < rows - 1; j++) for (let i = 0; i < cols - 1; i++) {
+          const a = field[j * cols + i], b = field[j * cols + i + 1], c = field[(j + 1) * cols + i + 1], d = field[(j + 1) * cols + i];
+          const k = (a > iso) | ((b > iso) << 1) | ((c > iso) << 2) | ((d > iso) << 3);
+          if (k === 0 || k === 15) continue;
+          const x = i * cell, y = j * cell;
+          const top = [x + cell * (iso - a) / (b - a), y], right = [x + cell, y + cell * (iso - b) / (c - b)];
+          const bot = [x + cell * (iso - d) / (c - d), y + cell], left = [x, y + cell * (iso - a) / (d - a)];
+          const seg = (p, q) => { ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); };
+          switch (k) {
+            case 1: case 14: seg(left, top); break;
+            case 2: case 13: seg(top, right); break;
+            case 3: case 12: seg(left, right); break;
+            case 4: case 11: seg(right, bot); break;
+            case 6: case 9: seg(top, bot); break;
+            case 7: case 8: seg(left, bot); break;
+            case 5: seg(left, top); seg(right, bot); break;
+            case 10: seg(top, right); seg(left, bot); break;
+          }
+        }
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    let last = 0;
+    function loop(ts) {
+      raf = requestAnimationFrame(loop);
+      if (!visible || ts - last < 50) return;
+      last = ts; t += 0.004; draw();
+    }
+    size(); draw();
+    addEventListener('resize', () => { size(); draw(); });
+    new IntersectionObserver(e => visible = e[0].isIntersecting).observe(canvas);
+    if (!reduce) raf = requestAnimationFrame(loop);
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+    new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+  contours(document.getElementById('contours'), { seed: 11, cell: 14, levels: 10, scale: 0.011 });
+  contours(document.getElementById('contours2'), { seed: 3, cell: 18, levels: 8, scale: 0.009, color: () => '#ffffff' });
+
+  /* ---------- hero phone timeline ---------- */
+  const phone = document.getElementById('phone');
+  const views = phone.querySelectorAll('.view');
+  const chip = document.getElementById('chip'), chipText = document.getElementById('chipText');
+  const appTitle = document.getElementById('appTitle');
+  const tabs = phone.querySelectorAll('.tabs span');
+  const notes = document.querySelectorAll('.note-tag');
+  const railBtns = document.querySelectorAll('#rail button');
+  const qline = document.getElementById('qline'), qsub = document.getElementById('qsub');
+  const STEPS = [
+    { title: 'Check', tab: 'Check', signal: 0, chip: ['', 'All sent'], dur: 3000 },
+    { title: 'Check', tab: 'Check', signal: 0, chip: ['waiting', 'Waiting to send · 1'], dur: 3800 },
+    { title: 'Check', tab: 'Check', signal: 0, chip: ['waiting', 'Waiting to send · 1'], dur: 4200 },
+    { title: 'Issue', tab: 'Journal', signal: 4, chip: ['sent', 'All sent'], dur: 4200 },
+    { title: 'Journal', tab: 'Journal', signal: 4, chip: ['sent', 'All sent'], dur: 4000 },
+  ];
+  let step = 0, timer, subTimers = [];
+  function setChip(cls, text) { chip.className = 'sync-chip' + (cls ? ' ' + cls : ''); chipText.textContent = text; }
+  function show(i) {
+    step = i; const s = STEPS[i];
+    subTimers.forEach(clearTimeout); subTimers = [];
+    phone.dataset.step = i; phone.dataset.signal = s.signal;
+    views.forEach(v => v.classList.toggle('on', +v.dataset.view === i));
+    tabs.forEach(t => t.classList.toggle('on', t.dataset.tab === s.tab));
+    appTitle.textContent = s.title; setChip(...s.chip);
+    notes.forEach(n => n.classList.toggle('on', +n.dataset.at === i));
+    railBtns.forEach(b => b.classList.toggle('on', +b.dataset.go === i));
+    if (i === 2) {
+      qline.textContent = 'Waiting to send · 1'; qsub.textContent = 'Photo shrunk to save data';
+      subTimers.push(setTimeout(() => { phone.dataset.signal = 1; }, 1500));
+      subTimers.push(setTimeout(() => { phone.dataset.signal = 2; setChip('sending', 'Sending 1 of 1'); qline.textContent = 'Sending 1 of 1'; }, 2300));
+      subTimers.push(setTimeout(() => { phone.dataset.signal = 4; setChip('sent', 'All sent'); qline.textContent = 'Sent to agronomist'; qsub.textContent = 'Server confirmed · 09:44'; }, 3500));
+    }
+    if (i === 4) { const li = phone.querySelector('.entries li.new'); li.classList.remove('new'); void li.offsetWidth; li.classList.add('new'); }
+  }
+  function next() { show((step + 1) % STEPS.length); schedule(); }
+  function schedule() { clearTimeout(timer); if (!reduce) timer = setTimeout(next, STEPS[step].dur); }
+  railBtns.forEach(b => b.addEventListener('click', () => { show(+b.dataset.go); schedule(); }));
+  show(0); schedule();
+  document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(timer); else schedule(); });
+
+  /* ---------- EN / SW headline ---------- */
+  const T = {
+    en: {
+      l1: ['Signal', 'can', 'wait.'], l2: ['Your', 'shamba', "can't."],
+      eyebrow: 'Android · English & Kiswahili · Works with no signal',
+      lede: "Snap a sick tomato leaf and get an <strong>honest first look</strong>. Follow the problem with a real agronomist until it's fixed. Your farm records live on your phone and send themselves when the network comes back."
+    },
+    sw: {
+      l1: ['Mtandao', 'unaweza', 'kusubiri.'], l2: ['Shamba', 'lako', 'haliwezi.'],
+      eyebrow: 'Android · Kiingereza na Kiswahili · Inafanya kazi bila mtandao',
+      lede: 'Piga picha ya jani la nyanya lenye ugonjwa upate <strong>jibu la kweli</strong>. Fuatilia tatizo na mtaalamu wa kilimo hadi litatuliwe. Kumbukumbu za shamba lako zinakaa kwenye simu na kutumwa mtandao ukirudi.'
+    }
+  };
+  const h1 = document.getElementById('headline');
+  const swapEls = document.querySelectorAll('.hero-swap');
+  const langBtns = document.querySelectorAll('.lang-switch button');
+  const underline = '<svg viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 20 C 70 6, 150 26, 296 10"/></svg>';
+  let lang = 'en', autoLang;
+  function words(arr, mark) { return arr.map(w => '<span class="w' + (w === mark ? ' shamba' : '') + '">' + w + (w === mark ? underline : '') + '</span>').join(' '); }
+  function setLang(l) {
+    if (l === lang) return; lang = l; const d = T[l];
+    langBtns.forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === l));
+    swapEls.forEach(e => e.classList.add('out'));
+    setTimeout(() => {
+      h1.innerHTML = '<span class="l1">' + words(d.l1) + '</span><span class="l2">' + words(d.l2, l === 'en' ? 'shamba' : 'Shamba') + '</span>';
+      document.querySelector('[data-i18n="eyebrow"]').textContent = d.eyebrow;
+      document.querySelector('[data-i18n="lede"]').innerHTML = d.lede;
+      h1.lang = document.querySelector('[data-i18n="lede"]').lang = l;
+      swapEls.forEach(e => e.classList.remove('out'));
+    }, reduce ? 0 : 300);
+  }
+  langBtns.forEach(b => b.addEventListener('click', () => { clearInterval(autoLang); setLang(b.dataset.lang); }));
+  if (!reduce) autoLang = setInterval(() => setLang(lang === 'en' ? 'sw' : 'en'), 7000);
+
+  /* ---------- +254 validation ---------- */
+  function normalise(raw) {
+    let d = raw.replace(/[\s\-()]/g, '');
+    if (d.startsWith('+254')) d = d.slice(4); else if (d.startsWith('254')) d = d.slice(3);
+    if (d.startsWith('0')) d = d.slice(1);
+    return /^(7\d{8}|1[01]\d{7})$/.test(d) ? '+254 ' + d.slice(0, 3) + ' ' + d.slice(3, 6) + ' ' + d.slice(6) : null;
+  }
+  function wire(formId, inputId, noteId, okMsg) {
+    const f = document.getElementById(formId), inp = document.getElementById(inputId), note = document.getElementById(noteId);
+    const base = note.textContent;
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const n = normalise(inp.value);
+      if (!n) { note.className = 'form-note err'; note.textContent = 'Enter a Kenyan mobile number, like 0712 345 678.'; inp.focus(); return; }
+      note.className = 'form-note ok'; note.textContent = okMsg(n);
+    });
+    inp.addEventListener('input', () => { if (note.classList.contains('err')) { note.className = 'form-note'; note.textContent = base; } });
+  }
+  wire('heroForm', 'heroPhone', 'heroNote', n => "You're on the list as " + n + '. (Preview only, nothing was saved.)');
+  wire('joinForm', 'joinPhone', 'joinNote', n => {
+    const org = document.getElementById('roleOrg').checked, c = document.getElementById('county').value;
+    return (org ? 'Thanks. We will call ' : "You're on the list as ") + n + (c ? ' in ' + c : '') + '. (Preview only, nothing was saved.)';
+  });
+  const counties = ['Baringo','Bomet','Bungoma','Busia','Elgeyo-Marakwet','Embu','Garissa','Homa Bay','Isiolo','Kajiado','Kakamega','Kericho','Kiambu','Kilifi','Kirinyaga','Kisii','Kisumu','Kitui','Kwale','Laikipia','Lamu','Machakos','Makueni','Mandera','Marsabit','Meru','Migori','Mombasa',"Murang'a",'Nairobi','Nakuru','Nandi','Narok','Nyamira','Nyandarua','Nyeri','Samburu','Siaya','Taita-Taveta','Tana River','Tharaka-Nithi','Trans Nzoia','Turkana','Uasin Gishu','Vihiga','Wajir','West Pokot'];
+  const sel = document.getElementById('county');
+  sel.innerHTML = '<option value="">County</option>' + counties.map(c => '<option>' + c + '</option>').join('');
+  document.querySelectorAll('[data-role="org"]').forEach(a => a.addEventListener('click', () => { document.getElementById('roleOrg').checked = true; }));
+
+  /* ---------- offline queue demo ---------- */
+  const bigChip = document.getElementById('bigChip'), bigText = document.getElementById('bigChipText'), qBars = document.getElementById('qBars');
+  const qItems = [...document.querySelectorAll('#qList .st')];
+  let qTimers = [];
+  function qReset() {
+    qTimers.forEach(clearTimeout); qTimers = [];
+    bigChip.className = 'big-chip'; bigText.textContent = 'Waiting to send · 3'; qBars.className = 'q-bars';
+    qItems.forEach(s => { s.className = 'st'; s.textContent = 'Waiting'; });
+  }
+  function qSend() {
+    qReset(); qBars.className = 'q-bars s2';
+    qItems.forEach((s, i) => {
+      qTimers.push(setTimeout(() => {
+        bigChip.className = 'big-chip sending'; bigText.textContent = 'Sending ' + (i + 1) + ' of 3';
+        s.textContent = 'Sending';
+      }, 500 + i * 1100));
+      qTimers.push(setTimeout(() => {
+        s.className = 'st done'; s.textContent = 'Sent';
+        if (i === 2) { bigChip.className = 'big-chip sent'; bigText.textContent = 'All sent'; qBars.className = 'q-bars s4'; }
+      }, 1300 + i * 1100));
+    });
+  }
+  document.getElementById('signalBtn').addEventListener('click', qSend);
+  document.getElementById('resetBtn').addEventListener('click', qReset);
+
+  /* ---------- dashboard decisions ---------- */
+  document.querySelectorAll('#dashRows .drow').forEach(row => {
+    row.querySelectorAll('.decide button').forEach(b => b.addEventListener('click', () => {
+      const v = b.textContent; const d = row.querySelector('.decide');
+      const span = document.createElement('span'); span.className = 'verdict';
+      span.textContent = (v === 'Agree' ? '✓ Agreed' : v === 'Adjust' ? '✎ Adjusted' : '✕ Rejected') + ' · farmer notified';
+      d.replaceWith(span); row.classList.add('done');
+    }));
+  });
+
+  /* ---------- screens gallery ---------- */
+  const gTrack = document.getElementById('gTrack');
+  const gStep = () => (gTrack.querySelector('.g-item').offsetWidth + 28);
+  document.getElementById('gPrev').addEventListener('click', () => gTrack.scrollBy({ left: -gStep(), behavior: reduce ? 'auto' : 'smooth' }));
+  document.getElementById('gNext').addEventListener('click', () => gTrack.scrollBy({ left: gStep(), behavior: reduce ? 'auto' : 'smooth' }));
+  let gDown = false, gX = 0, gL = 0;
+  gTrack.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; gDown = true; gX = e.clientX; gL = gTrack.scrollLeft; gTrack.classList.add('drag'); });
+  addEventListener('pointermove', e => { if (gDown) gTrack.scrollLeft = gL - (e.clientX - gX); });
+  addEventListener('pointerup', () => { if (gDown) { gDown = false; gTrack.classList.remove('drag'); } });
+  gTrack.addEventListener('keydown', e => { if (e.key === 'ArrowRight') gTrack.scrollBy({ left: gStep() }); if (e.key === 'ArrowLeft') gTrack.scrollBy({ left: -gStep() }); });
+
+  /* ---------- footer wordmark rises into view ---------- */
+  const bm = document.querySelector('.bigmark');
+  if (reduce || !('IntersectionObserver' in window)) bm.classList.add('up');
+  else new IntersectionObserver(es => es.forEach(e => bm.classList.toggle('up', e.isIntersecting)), { threshold: 0.3 }).observe(bm);
+
+  /* ---------- gentle reveal (content is visible at rest) ---------- */
+  if (!reduce && 'IntersectionObserver' in window) {
+    const els = [...document.querySelectorAll('.reveal')].filter(el => el.getBoundingClientRect().top > innerHeight);
+    els.forEach(el => el.classList.add('pre'));
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.remove('pre'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+    els.forEach(el => io.observe(el));
+  }
+})();
+</script>

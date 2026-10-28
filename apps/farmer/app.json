@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "ShambaSense",
+    "slug": "shambasense",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "shambasense",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#0F3D26",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "android": {
+      "package": "tech.nexflora.shambasense",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F3D26",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "softwareKeyboardLayoutMode": "resize",
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png",
+      "themeColor": "#0F3D26"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "asyncRoutes": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0F3D26",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 112
+        }
+      ],
+      "expo-secure-store",
+      "expo-localization"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "ios": {
+      "bundleIdentifier": "tech.nexflora.shambasense",
+      "supportsTablet": false
+    }
+  }
+}

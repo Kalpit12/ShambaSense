@@ -1,0 +1,51 @@
+/* Product tokens from design.md v2.0 §5, dashboard scale (14 px base). */
+:root {
+  --stone-50: #f3f4f2;
+  --stone-100: #e8ebe6;
+  --stone-200: #d5dad3;
+  --stone-300: #b7c0b4;
+  --stone-500: #6b756e;
+  --stone-600: #47514b;
+  --stone-800: #24302a;
+  --ink: #14201a;
+  --forest-50: #e6efe8;
+  --forest-100: #cfe0d3;
+  --forest-900: #0f3d26;
+  --forest-950: #0b2e1c;
+  --on-forest: #f4f1e6;
+  --lime: #c4ef5a;
+  --sky-50: #e7f3f8;
+  --sky-700: #2a6f97;
+  --amber-50: #fbf0dc;
+  --amber-800: #8a5a10;
+  --red-50: #fcebea;
+  --red-700: #b42318;
+  --white: #ffffff;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --shadow-sheet: 0 8px 24px rgba(20, 32, 26, 0.12);
+  --font: 'IBM Plex Sans', 'Noto Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink);
+  background: var(--stone-50);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--forest-900); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--mono); font-size: 12px; line-height: 16px; font-weight: 500; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
