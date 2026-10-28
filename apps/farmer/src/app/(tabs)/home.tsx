@@ -1,12 +1,12 @@
 import { useRouter, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useMemo, type ComponentType } from 'react';
+import { useEffect, useMemo, type ComponentType } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { AreaChart, LegendDot, MeterBar, Rings } from '@/components/charts';
 import { DarkHero, HeroBody } from '@/components/hero';
-import { BookOpenTextIcon, CalendarBlankIcon, CameraIcon, CaretRightIcon, CloudSunIcon, NotebookIcon, PlantIcon } from '@/components/icons';
+import { BookOpenTextIcon, CalendarBlankIcon, CalendarCheckIcon, CameraIcon, CheckSquareIcon, CaretRightIcon, CloudSunIcon, NotebookIcon, PlantIcon } from '@/components/icons';
 import { Enter, PressableScale } from '@/components/motion';
 import { CheckRow, RecordRow } from '@/components/record-row';
 import { Card, SectionTitle } from '@/components/screen';
@@ -18,6 +18,7 @@ import { todayIso, useFarm, type JournalRecord, type Plot } from '@/lib/farm-sto
 import { formatKes } from '@/lib/format';
 import { followUpNeeded, followUpState } from '@/lib/follow-up';
 import { expectedPlots } from '@/lib/onboarding';
+import { useCoopTasks } from '@/lib/tasks';
 import { color, font, radius, space, type } from '@/theme/tokens';
 
 type IconProps = { size?: number; color?: string; weight?: 'regular' | 'fill' | 'bold' };
@@ -32,6 +33,10 @@ export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { plots, records, checks, followUps } = useFarm();
+  const { tasks: coopTasks, refresh: refreshTasks } = useCoopTasks();
+  useEffect(() => {
+    refreshTasks();
+  }, [refreshTasks]);
   const farm = user?.farm;
   const lang = i18n.language;
   const today = todayIso();
@@ -87,6 +92,26 @@ export default function HomeScreen() {
           ? t('followUp.taskOverdue', { date: shortDate(s.kind === 'overdue' ? s.due! : today, lang) })
           : t('followUp.taskDueToday');
     tasks.push({ key: `follow-${c.id}`, title: t('followUp.taskTitle', { crop: t(`onboarding.crops.${c.crop}`) }), hint, Icon: CameraIcon, href: `/check?followUp=${c.id}` });
+  }
+  // Then what the co-op asked for: tasks due within 3 days or late, and visits in the coming week.
+  for (const x of coopTasks) {
+    if (x.status === 'done') continue;
+    if (x.kind === 'farmer' && x.dueOn <= shiftDays(today, 3))
+      tasks.push({
+        key: `coop-${x.id}`,
+        title: x.title,
+        hint: `${t('tasks.homeTask')} · ${x.dueOn === today ? t('tasks.dueToday') : x.dueOn < today ? t('tasks.overdue', { date: shortDate(x.dueOn, lang) }) : t('tasks.due', { date: shortDate(x.dueOn, lang) })}`,
+        Icon: CheckSquareIcon,
+        href: '/tasks',
+      });
+    if (x.kind === 'visit' && x.dueOn >= today && x.dueOn <= shiftDays(today, 7))
+      tasks.push({
+        key: `coop-${x.id}`,
+        title: t('tasks.homeVisit'),
+        hint: t('tasks.homeVisitHint', { name: x.assigneeName ?? '', date: x.dueOn === today ? t('tasks.dueToday') : shortDate(x.dueOn, lang) }),
+        Icon: CalendarCheckIcon,
+        href: '/tasks',
+      });
   }
   if (plots.length < total)
     tasks.push({ key: 'plots', title: t('home.taskAddPlot'), hint: t('home.taskAddPlotHint', { done: plots.length, total }), Icon: PlantIcon, href: '/shamba?add=1' });

@@ -54,7 +54,7 @@ function RootStack() {
       if (top && !['sign-in', 'sign-up', 'verify'].includes(top)) router.replace('/');
     } else if (!user.onboarded) {
       if (top !== 'onboarding') router.replace('/onboarding');
-    } else if (!['(tabs)', 'check', 'plot', 'result', 'guides'].includes(top ?? '')) {
+    } else if (!['(tabs)', 'check', 'plot', 'result', 'guides', 'tasks'].includes(top ?? '')) {
       router.replace('/home');
     }
   }, [ready, user, top, router]);
@@ -86,6 +86,7 @@ function RootStack() {
         <Stack.Screen name="check" options={{ animation: 'slide_from_bottom', animationDuration: 240 }} />
         <Stack.Screen name="plot/[id]" options={{ animation: 'slide_from_right', animationDuration: 240 }} />
         <Stack.Screen name="result/[id]" options={{ animation: 'slide_from_right', animationDuration: 240 }} />
+        <Stack.Screen name="tasks" options={{ animation: 'slide_from_right', animationDuration: 240 }} />
         <Stack.Screen name="guides/index" options={{ animation: 'slide_from_right', animationDuration: 240 }} />
         <Stack.Screen name="guides/[id]" options={{ animation: 'slide_from_right', animationDuration: 240 }} />
       </Stack.Protected>

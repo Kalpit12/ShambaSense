@@ -290,5 +290,61 @@ select pg_temp.check((select count(*) from public.guides where org_id = '0000000
 select pg_temp.check((select count(*) from public.guides where org_id = '00000000-0000-4000-8000-00000000d000') = 0, 'farmers do not see other co-ops'' guides');
 reset role;
 
+-- Tasks and visits: the team plans them, the farmer sees and ticks off their own.
+reset role;
+update public.org_farmer_links set status = 'active' where farmer_id = '00000000-0000-0000-0000-00000000000a';
+delete from net.sent;
+insert into public.plots (id, farm_id, name) select '70000000-0000-0000-0000-000000000001', id, 'B plot' from public.farms where owner_id = '00000000-0000-0000-0000-00000000000b' limit 1;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select set_config('test.task', public.save_task(null, '00000000-0000-0000-0000-0000000000f1', 'farmer', '00000000-0000-0000-0000-00000000000a', null, null,
+  '  Remove the   lower leaves ', 'Burn them.', current_date + 1, null)::text, false);
+select set_config('test.visit', public.save_task(null, '00000000-0000-0000-0000-0000000000f1', 'visit', '00000000-0000-0000-0000-00000000000a', null, null,
+  'Check tomatoes', 'Bring traps.', current_date, null)::text, false);
+select pg_temp.check((select title || '|' || assignee_name from public.tasks where id = current_setting('test.task')::uuid) = 'Remove the lower leaves|Wanjiru K.', 'a task is saved, assigned to whoever made it');
+select pg_temp.check((select count(*) from public.org_tasks('00000000-0000-0000-0000-0000000000f1')) = 2, 'the team sees its tasks');
+do $$ begin
+  perform public.save_task(null, '00000000-0000-0000-0000-0000000000f1', 'farmer', '00000000-0000-0000-0000-0000000000c2', null, null, 'x', null, current_date, null);
+  raise exception 'FAILED: task for someone not linked';
+exception when insufficient_privilege then raise notice 'ok: tasks only go to linked farmers';
+end $$;
+do $$ begin
+  perform public.save_task(null, '00000000-0000-0000-0000-0000000000f1', 'farmer', '00000000-0000-0000-0000-00000000000a', '70000000-0000-0000-0000-000000000001', null, 'x', null, current_date, null);
+  raise exception 'FAILED: task on another farmer''s plot';
+exception when invalid_parameter_value then raise notice 'ok: a task''s plot must be the farmer''s';
+end $$;
+reset role;
+select pg_temp.check((select count(*) from net.sent) = 2 and (select body -> 0 ->> 'title' from net.sent order by id limit 1) = 'Kazi mpya kutoka kwa chama chako', 'a new task alerts the farmer in their language');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select count(*) from public.tasks) = 0, 'farmers do not read the tasks table');
+select pg_temp.check((select count(*) from public.my_tasks()) = 2, 'the farmer gets their task and visit');
+select pg_temp.check((select note from public.my_tasks() where kind = 'visit') is null, 'the team''s visit note stays off the phone');
+select public.farmer_set_task_done(current_setting('test.task')::uuid, true, now() - interval '2 days');
+select public.farmer_set_task_done(current_setting('test.task')::uuid, true, now());
+do $$ begin
+  perform public.farmer_set_task_done(current_setting('test.visit')::uuid, true, now());
+  raise exception 'FAILED: farmer closed a visit';
+exception when no_data_found then raise notice 'ok: farmers cannot close visits';
+end $$;
+do $$ begin
+  perform public.save_task(current_setting('test.task')::uuid, null, null, null, null, null, 'x', null, current_date, null);
+  raise exception 'FAILED: farmer changed a task';
+exception when insufficient_privilege then raise notice 'ok: farmers cannot change tasks';
+end $$;
+reset role;
+select pg_temp.check((select done_by = 'farmer' and done_at < now() - interval '1 day' from public.tasks where id = current_setting('test.task')::uuid), 'ticking off offline keeps when it was done, once');
+select pg_temp.check(public.send_task_reminders() = 1, 'today''s visit gets a morning reminder');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select public.set_task_status(current_setting('test.visit')::uuid, 'done', 'Blight on 3 plants, removed them.');
+select pg_temp.check((select status || '|' || done_by || '|' || outcome from public.tasks where id = current_setting('test.visit')::uuid) = 'done|team|Blight on 3 plants, removed them.', 'a visit is closed with a report');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.my_tasks()) = 0, 'other farmers see none of it');
+reset role;
+update public.org_farmer_links set status = 'revoked' where farmer_id = '00000000-0000-0000-0000-00000000000a';
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select count(*) from public.my_tasks()) = 0, 'leaving the co-op takes its tasks off the phone');
+reset role;
+update public.org_farmer_links set status = 'active' where farmer_id = '00000000-0000-0000-0000-00000000000a';
+
 -- Every public table has RLS on.
 select pg_temp.check(not exists (select 1 from pg_tables where schemaname = 'public' and not rowsecurity), 'RLS is on for every table');

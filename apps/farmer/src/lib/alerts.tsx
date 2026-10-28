@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { supabase } from './auth';
+import { useCoopTasks } from './tasks';
 import { useFarm } from './farm-store';
 
 // Reply alerts (architecture.md §10). The server sends a notification when an agronomist answers or
@@ -57,10 +58,13 @@ async function register(language: string, title: string) {
 export function ReplyAlerts({ userId }: { userId?: string }) {
   const { t, i18n } = useTranslation();
   const { checks, followUps, sendNow } = useFarm();
+  const { tasks, refresh } = useCoopTasks();
   const router = useRouter();
   const sendRef = useRef(sendNow);
   sendRef.current = sendNow;
-  const asked = checks.some((c) => c.askedAt) || followUps.length > 0;
+  const refreshRef = useRef(refresh);
+  refreshRef.current = refresh;
+  const asked = checks.some((c) => c.askedAt) || followUps.length > 0 || tasks.length > 0;
 
   // Register once the farmer has a case, and again when the language changes so alerts match it.
   useEffect(() => {
@@ -76,7 +80,10 @@ export function ReplyAlerts({ userId }: { userId?: string }) {
   const last = Notifications.useLastNotificationResponse();
   useEffect(() => {
     if (!native || !userId) return;
-    const sub = Notifications.addNotificationReceivedListener(() => sendRef.current());
+    const sub = Notifications.addNotificationReceivedListener((n) => {
+      if (n.request.content.data?.taskId) refreshRef.current();
+      else sendRef.current();
+    });
     return () => sub.remove();
   }, [userId]);
   useEffect(() => {
@@ -84,8 +91,14 @@ export function ReplyAlerts({ userId }: { userId?: string }) {
     const id = last.notification.request.identifier;
     if (handled.current === id) return;
     handled.current = id;
+    const data = last.notification.request.content.data;
+    if (data?.taskId) {
+      refreshRef.current();
+      router.push('/tasks');
+      return;
+    }
     sendRef.current();
-    const checkId = last.notification.request.content.data?.checkId;
+    const checkId = data?.checkId;
     if (typeof checkId === 'string') router.push({ pathname: '/result/[id]', params: { id: checkId } });
   }, [last, userId, router]);
 

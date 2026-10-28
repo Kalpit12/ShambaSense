@@ -1,15 +1,28 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 import { CROP_NAME } from '@/lib/causes';
 import { ago, daysUntil, dateLabel } from '@/lib/format';
 import { TEAM } from '@/lib/sample';
+import { supabase } from '@/lib/remote';
 import { useStore } from '@/lib/store';
+import { isClosed, loadTasks, sampleTasks, type Task } from '@/lib/tasks';
 import type { Severity } from '@/lib/types';
 import { SeverityMark, StatusTag } from './marks';
 
 /** Overview (design.md §10): a row of counts, then tables. No doughnuts. */
 export function Overview({ onOpen }: { onOpen: (id: string) => void }) {
-  const { issues } = useStore();
+  const { issues, org } = useStore();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  useEffect(() => {
+    if (!org) return;
+    if (!supabase) setTasks(sampleTasks());
+    else loadTasks(supabase, org).then(setTasks).catch(() => {});
+  }, [org]);
+  const openTasks = tasks.filter((t) => !isClosed(t.status));
+  const tasksToday = openTasks.filter((t) => daysUntil(t.dueOn) === 0).length;
+  const tasksLate = openTasks.filter((t) => daysUntil(t.dueOn) < 0).length;
   const active = issues.filter((i) => i.status !== 'closed');
   const needsReview = issues.filter((i) => i.status === 'open' || i.status === 'in_review');
   const bySeverity = (s: Severity) => needsReview.filter((i) => i.severity === s).length;
@@ -52,11 +65,11 @@ export function Overview({ onOpen }: { onOpen: (id: string) => void }) {
           <span className="w-value num">{dueSoon.length}</span>
           <span className="w-sub">Farmers get a reminder SMS</span>
         </div>
-        <div className="widget">
-          <span className="w-label">Sync failures</span>
-          <span className="w-value num">0</span>
-          <span className="w-sub">Phones with uploads stuck</span>
-        </div>
+        <a className={`widget widget-link ${tasksLate ? 'widget-warn' : ''}`} href="#tasks">
+          <span className="w-label">Tasks and visits due today</span>
+          <span className="w-value num">{tasksToday}</span>
+          <span className="w-sub">{tasksLate ? `${tasksLate} overdue` : 'None overdue'}</span>
+        </a>
       </div>
 
       <section className="panel">

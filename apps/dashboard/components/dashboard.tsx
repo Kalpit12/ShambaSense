@@ -8,12 +8,13 @@ import { IssuesView } from './issues-view';
 import { NoOrg } from './no-org';
 import { KnowledgeView } from './knowledge-view';
 import { ReportsView } from './reports-view';
+import { TasksView } from './tasks-view';
 import { Overview } from './overview';
 import { Shell, type View } from './shell';
 import { SignIn } from './sign-in';
 import { TeamView } from './team-view';
 
-const HASH_VIEWS: View[] = ['overview', 'farmers', 'team', 'reports', 'knowledge'];
+const HASH_VIEWS: View[] = ['overview', 'farmers', 'team', 'reports', 'knowledge', 'tasks'];
 
 // Views switch on the client while the dashboard runs on sample data, so the export is one page.
 // With Supabase they become App Router routes (/overview, /issues/[code]) read on the server.
@@ -34,7 +35,7 @@ function Gate() {
 
   useEffect(() => {
     const read = () => {
-      const hash = window.location.hash.slice(1);
+      const hash = window.location.hash.slice(1).split('?')[0];
       setView((HASH_VIEWS as string[]).includes(hash) ? (hash as View) : 'issues');
     };
     read();
@@ -70,7 +71,7 @@ function Gate() {
         search={search}
         onSearch={(s) => {
           setSearch(s);
-          if (s && view !== 'farmers' && view !== 'knowledge') go('issues');
+          if (s && view !== 'farmers' && view !== 'knowledge' && view !== 'tasks') go('issues');
         }}>
         {error ? <p className="flag load-error">{error}</p> : null}
         {view === 'overview' ? (
@@ -83,6 +84,8 @@ function Gate() {
           <ReportsView />
         ) : view === 'knowledge' ? (
           <KnowledgeView search={search} />
+        ) : view === 'tasks' ? (
+          <TasksView search={search} onOpenCase={open} />
         ) : (
           <IssuesView search={search} selectedId={selected} onSelect={setSelected} />
         )}

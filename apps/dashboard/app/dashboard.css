@@ -266,3 +266,13 @@
 .link.danger { color: var(--red-700); }
 .status-actions .link { margin-left: auto; }
 .detail .sent-back { padding: 10px 12px; border-radius: var(--radius-sm); background: var(--amber-50); color: var(--amber-800); }
+
+/* Tasks */
+.head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.check { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; }
+.table tbody tr.overdue:not(.selected) { background: var(--amber-50); }
+.late { color: var(--amber-800); font-weight: 600; }
+.tab.tab-warn .tab-count { color: var(--amber-800); font-weight: 700; }
+.status-actions a.btn { text-decoration: none; display: inline-flex; align-items: center; }
+.widget-link { color: inherit; text-decoration: none; }
+.widget-link:hover { border-color: var(--stone-300); }

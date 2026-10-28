@@ -37,3 +37,5 @@ export { WarningIcon } from 'phosphor-react-native/src/icons/Warning';
 export { TrendUpIcon } from 'phosphor-react-native/src/icons/TrendUp';
 export { TrendDownIcon } from 'phosphor-react-native/src/icons/TrendDown';
 export { EqualsIcon } from 'phosphor-react-native/src/icons/Equals';
+export { CheckSquareIcon } from 'phosphor-react-native/src/icons/CheckSquare';
+export { CalendarCheckIcon } from 'phosphor-react-native/src/icons/CalendarCheck';

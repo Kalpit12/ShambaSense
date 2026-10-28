@@ -165,6 +165,12 @@ export function IssueDetail({ issue, onClose }: { issue: Issue; onClose: () => v
           <button className="btn btn-secondary" onClick={() => setStatus(issue.id, 'closed')}>
             Close case
           </button>
+          <a className="btn btn-secondary" href={taskLink(issue, 'farmer')}>
+            Give the farmer a task
+          </a>
+          <a className="btn btn-secondary" href={taskLink(issue, 'visit')}>
+            Plan a visit
+          </a>
         </div>
       ) : (
         <div className="status-actions">
@@ -175,6 +181,12 @@ export function IssueDetail({ issue, onClose }: { issue: Issue; onClose: () => v
       )}
     </aside>
   );
+}
+
+/** Opens the Tasks page with a new task or visit for this case's farmer filled in. */
+function taskLink(issue: Issue, kind: 'farmer' | 'visit') {
+  const q = new URLSearchParams({ new: kind, issue: issue.id, farmer: issue.farmerId ?? '', name: issue.farmer.name });
+  return `#tasks?${q}`;
 }
 
 /** Agree / Adjust / Reject / Request more photos, with the reply the farmer will read. */

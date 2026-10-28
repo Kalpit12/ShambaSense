@@ -16,6 +16,7 @@ import { Sheet } from '@/components/sheet';
 import { SyncChip, syncTime } from '@/components/sync-chip';
 import { forgetPushToken } from '@/lib/alerts';
 import { forgetGuides } from '@/lib/guides';
+import { forgetTasks } from '@/lib/tasks';
 import { isPreview, useAuth } from '@/lib/auth';
 import { useFarm } from '@/lib/farm-store';
 import { formatKenya } from '@/lib/phone';
@@ -45,6 +46,7 @@ export default function ProfileScreen() {
     setConfirming(false);
     await forgetPushToken();
     await forgetGuides(user?.id ?? user?.phone);
+    await forgetTasks(user?.id ?? user?.phone);
     await clear();
     await signOut();
   };
