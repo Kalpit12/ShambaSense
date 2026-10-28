@@ -295,3 +295,5 @@
 .count-row input { width: 100%; text-align: right; }
 .count-row select:disabled { opacity: 0.5; }
 .count-row input, .count-row select { height: 36px; padding: 0 8px; border: 1px solid var(--stone-300); border-radius: var(--radius-sm); background: var(--white); }
+
+.crash { max-width: 28rem; margin: 20vh auto; padding: 0 16px; display: grid; gap: 16px; justify-items: start; }

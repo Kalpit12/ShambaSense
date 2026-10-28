@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { causesFor, CROP_NAME } from '@/lib/causes';
 import { isAdmin, loadFarmers, sampleFarmers, type CoopFarmer } from '@/lib/coop';
+import { downloadScouting } from '@/lib/exports';
 import { dateLabel } from '@/lib/format';
 import { supabase } from '@/lib/remote';
 import {
@@ -124,11 +125,16 @@ export function ScoutingView({ search }: { search: string }) {
             <h1>Scouting</h1>
             <p className="muted">Pest and disease counts from the field, added up by ward. Each farm counts once, from its latest round.</p>
           </div>
-          {planner ? (
-            <button className="btn btn-primary" onClick={() => (pick(null), setCreating({}))}>
-              Log a round
+          <div className="head-actions">
+            <button className="btn btn-secondary" onClick={() => downloadScouting(org.name, list)} disabled={!list.length}>
+              Download (CSV)
             </button>
-          ) : null}
+            {planner ? (
+              <button className="btn btn-primary" onClick={() => (pick(null), setCreating({}))}>
+                Log a round
+              </button>
+            ) : null}
+          </div>
         </div>
         {error && !open ? <p className="flag">{error}</p> : null}
         {note && !open ? <p className="sent">{note}</p> : null}

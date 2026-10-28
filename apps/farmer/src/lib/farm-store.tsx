@@ -5,6 +5,7 @@ import { previewResult, type CheckResult } from './check-results';
 
 import type { Crop } from './onboarding';
 import { isPreview, supabase } from './auth';
+import { reportError } from './errors';
 import { askAgronomistRemote, diagnoseRemote, farmIdFor, pullAnswers, sendFollowUpRemote, sendRow, type Row } from './remote-sync';
 import { deletePhotos, keepPhoto } from './photos';
 import { PREVIEW_PHONE, previewSeed } from './preview-seed';
@@ -248,8 +249,9 @@ export function FarmStoreProvider({ owner, userId, children }: { owner: string; 
         update((cur) => ({ ...cur, checks: cur.checks.map((x) => (x.id === c.id ? { ...x, askSent: true } : x)) }));
       }
       update((cur) => ({ ...cur, lastSyncAt: now() }));
-    } catch {
+    } catch (e) {
       // No signal or the server said no; everything not marked sent stays queued.
+      reportError(e, { kind: 'sync' });
     } finally {
       setProgress(null);
       sending.current = false;

@@ -29,6 +29,7 @@ export const sw: Strings = {
     phoneInvalid: 'Weka nambari ya simu ya Kenya, kama 712 345 678.',
     offline: 'Hakuna mtandao. Jaribu tena ukipata mtandao.',
     genericError: 'Kuna tatizo. Tafadhali jaribu tena.',
+    tryAgain: 'Jaribu tena',
     demoAuthBanner: 'Toleo la majaribio: akaunti za majaribio zinatumia 123456.',
     demoBanner: 'Hali ya majaribio: hakuna SMS inayotumwa. Tumia 123456.',
   },

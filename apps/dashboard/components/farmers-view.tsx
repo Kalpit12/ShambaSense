@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { CROP_NAME } from '@/lib/causes';
 import { coopError, isAdmin, loadFarmers, sampleFarmers, SIZE_LABEL, WATER_LABEL, type CoopFarmer } from '@/lib/coop';
+import { downloadFarmers } from '@/lib/exports';
 import { ago, dateLabel } from '@/lib/format';
 import { supabase } from '@/lib/remote';
 import { useStore } from '@/lib/store';
@@ -65,9 +66,14 @@ export function FarmersView({ search, onOpenCase }: { search: string; onOpenCase
   return (
     <div className={`issues ${selected ? 'with-detail' : ''}`}>
       <section className="list-pane" aria-label="Farmers">
-        <div className="page-head">
-          <h1>Farmers</h1>
-          <p className="muted">Farmers who joined {org.name} with its join code. You see their farm and crop checks for as long as they stay in the co-op.</p>
+        <div className="page-head report-head">
+          <div>
+            <h1>Farmers</h1>
+            <p className="muted">Farmers who joined {org.name} with its join code. You see their farm and crop checks for as long as they stay in the co-op.</p>
+          </div>
+          <button className="btn btn-secondary" onClick={() => downloadFarmers(org.name, rows)} disabled={!rows.length}>
+            Download (CSV)
+          </button>
         </div>
         {error ? <p className="flag">{error}</p> : null}
         {note ? <p className="sent">{note}</p> : null}

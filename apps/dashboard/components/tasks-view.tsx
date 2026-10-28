@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { loadFarmers, loadTeam, sampleFarmers, sampleTeam, type CoopFarmer, type Member } from '@/lib/coop';
+import { downloadTasks } from '@/lib/exports';
 import { ago, dateLabel, daysUntil } from '@/lib/format';
 import { supabase } from '@/lib/remote';
 import { useStore } from '@/lib/store';
@@ -152,16 +153,21 @@ export function TasksView({ search, onOpenCase }: { search: string; onOpenCase: 
             <h1>Tasks</h1>
             <p className="muted">Farm visits the team plans, and tasks farmers see on their phones and tick off, even without signal.</p>
           </div>
-          {planner ? (
-            <div className="head-actions">
-              <button className="btn btn-secondary" onClick={() => (pick(null), setCreating({ kind: 'visit' }))}>
-                Plan a visit
-              </button>
-              <button className="btn btn-primary" onClick={() => (pick(null), setCreating({ kind: 'farmer' }))}>
-                Give a farmer a task
-              </button>
-            </div>
-          ) : null}
+          <div className="head-actions">
+            <button className="btn btn-secondary" onClick={() => downloadTasks(org.name, rows)} disabled={!rows.length}>
+              Download (CSV)
+            </button>
+            {planner ? (
+              <>
+                <button className="btn btn-secondary" onClick={() => (pick(null), setCreating({ kind: 'visit' }))}>
+                  Plan a visit
+                </button>
+                <button className="btn btn-primary" onClick={() => (pick(null), setCreating({ kind: 'farmer' }))}>
+                  Give a farmer a task
+                </button>
+              </>
+            ) : null}
+          </div>
         </div>
         {error && !open ? <p className="flag">{error}</p> : null}
         {note && !open ? <p className="sent">{note}</p> : null}

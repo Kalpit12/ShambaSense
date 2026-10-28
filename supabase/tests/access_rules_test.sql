@@ -384,5 +384,14 @@ select pg_temp.check(public.sign_in_mode('+254712345678') = 'sms', 'demo account
 update public.feature_flags set enabled = true where key = 'demo_auth';
 update public.feature_flags set enabled = false where key = 'sms_auth';
 
+-- Error log: anyone can write a trimmed line, nobody reads it back.
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.log_app_error('farmer', '1.0', 'web', repeat('x', 5000), null, '{"screen":"home"}');
+select public.log_app_error('nonsense', '1.0', 'web', 'dropped', null, '{}');
+select pg_temp.check((select count(*) from public.app_errors) = 0, 'farmers cannot read the error log');
+reset role;
+select pg_temp.check((select count(*) from public.app_errors) = 1 and (select length(message) from public.app_errors) = 1000
+  and (select user_id from public.app_errors) = '00000000-0000-0000-0000-00000000000a', 'errors are logged trimmed, with the user');
+
 -- Every public table has RLS on.
 select pg_temp.check(not exists (select 1 from pg_tables where schemaname = 'public' and not rowsecurity), 'RLS is on for every table');

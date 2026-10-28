@@ -71,3 +71,10 @@ demo accounts keep the code 123456 and new numbers get a real code once `sms_aut
 | `AT_USERNAME` | `sandbox` for testing, the live app's username later |
 | `AT_API_KEY` | API key for that username |
 | `AT_SENDER_ID` | Optional, live only: an approved sender name |
+
+## Error log (`app_errors`)
+
+Both apps send crashes and failed syncs to `log_app_error`, which trims them and caps them at 50 an
+hour per user. Nobody reads the table from the apps; look in Table Editor → `app_errors`, or:
+`select created_at, app, platform, message, context from app_errors order by created_at desc limit 50;`
+Rows older than 90 days are deleted each night.

@@ -2,18 +2,37 @@ import { IBMPlexSans_400Regular } from '@expo-google-fonts/ibm-plex-sans/400Regu
 import { IBMPlexSans_500Medium } from '@expo-google-fonts/ibm-plex-sans/500Medium';
 import { IBMPlexSans_600SemiBold } from '@expo-google-fonts/ibm-plex-sans/600SemiBold';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments, type ErrorBoundaryProps } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { initI18n } from '@/i18n';
 import { native, ReplyAlerts } from '@/lib/alerts';
+import { Button } from '@/components/button';
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { installErrorReporting, reportError } from '@/lib/errors';
 import { FarmStoreProvider } from '@/lib/farm-store';
-import { color } from '@/theme/tokens';
+import { color, font, space, type } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
+installErrorReporting();
+
+/** A screen crashed: tell the team, and give the farmer a way back without losing saved work. */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  const { t } = useTranslation();
+  useEffect(() => {
+    reportError(error, { kind: 'screen' });
+  }, [error]);
+  return (
+    <View style={styles.crash}>
+      <Text style={styles.crashText}>{t('common.genericError')}</Text>
+      <Button label={t('common.tryAgain')} onPress={retry} />
+    </View>
+  );
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ IBMPlexSans_400Regular, IBMPlexSans_500Medium, IBMPlexSans_600SemiBold });
@@ -95,3 +114,8 @@ function RootStack() {
     </FarmStoreProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  crash: { flex: 1, justifyContent: 'center', padding: space[6], gap: space[4], backgroundColor: color.stone50 },
+  crashText: { ...type.body, fontFamily: font.medium, color: color.ink, textAlign: 'center' },
+});

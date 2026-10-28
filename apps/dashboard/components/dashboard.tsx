@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { installErrorReporting } from '@/lib/errors';
 import { StoreProvider, useStore } from '@/lib/store';
 import { FarmersView } from './farmers-view';
 import { IssuesView } from './issues-view';
@@ -20,6 +21,7 @@ const HASH_VIEWS: View[] = ['overview', 'farmers', 'team', 'reports', 'knowledge
 // Views switch on the client while the dashboard runs on sample data, so the export is one page.
 // With Supabase they become App Router routes (/overview, /issues/[code]) read on the server.
 export function Dashboard() {
+  useEffect(installErrorReporting, []);
   return (
     <StoreProvider>
       <Gate />
