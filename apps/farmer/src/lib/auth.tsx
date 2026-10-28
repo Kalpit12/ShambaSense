@@ -1,4 +1,4 @@
-import { createClient, type Session } from '@supabase/supabase-js';
+import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import type { Language } from '@/i18n';
@@ -30,6 +30,20 @@ const PREVIEW_CODE = '123456';
 export const isDemo = !!supabase && process.env.EXPO_PUBLIC_DEMO_AUTH === '1';
 const DEMO_PASSWORD = 'shamba-demo-123456';
 const demoEmail = (phone: string) => `farmer.${phone.replace('+', '')}@example.com`;
+
+// With demo sign-in on, the server decides per number: demo accounts keep 123456, and new numbers get
+// a real SMS once the 'sms_auth' flag is on (supabase/migrations/20261028230000_sms_sign_in.sql).
+const modes = new Map<string, 'demo' | 'sms'>();
+async function usesDemo(client: SupabaseClient, phone: string) {
+  if (!isDemo) return false;
+  if (!modes.has(phone)) {
+    const { data, error } = await client.rpc('sign_in_mode', { p_phone: phone });
+    if (error && !/sign_in_mode/.test(error.message)) throw new Error(error.message);
+    // A database without the function yet: everything stays demo, as before.
+    modes.set(phone, data === 'sms' ? 'sms' : 'demo');
+  }
+  return modes.get(phone) === 'demo';
+}
 
 export type SignUpDetails = { name: string; county: string; language: Language };
 export type AuthError = 'no_account' | 'account_exists' | 'wrong_code' | 'expired' | 'rate_limited' | 'offline' | 'unknown';
@@ -122,7 +136,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           previewPending = { phone, details: signUp };
           return null;
         }
-        if (isDemo) {
+        let demo: boolean;
+        try {
+          demo = await usesDemo(supabase, phone);
+        } catch (e) {
+          return mapError(e instanceof Error ? e.message : String(e));
+        }
+        if (demo) {
           if (signUp) {
             const { error } = await supabase.rpc('demo_sign_up', {
               p_phone: phone,
@@ -148,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return error ? mapError(error.message, error.status) : null;
       },
       async resendCode(phone) {
-        if (!supabase || isDemo) {
+        if (!supabase || (isDemo && modes.get(phone) !== 'sms')) {
           await delay(400);
           return null;
         }
@@ -167,7 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser({ phone, name: details?.name, county: details?.county, onboarded: !isNew, farm: isNew ? undefined : PREVIEW_FARM });
           return null;
         }
-        if (isDemo) {
+        if (isDemo && modes.get(phone) !== 'sms') {
           if (code !== PREVIEW_CODE) return 'wrong_code';
           const { error } = await supabase.auth.signInWithPassword({ email: demoEmail(phone), password: DEMO_PASSWORD });
           return error ? mapError(error.message, error.status) : null;

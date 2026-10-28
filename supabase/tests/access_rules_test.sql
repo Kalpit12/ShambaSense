@@ -375,5 +375,14 @@ select public.delete_scouting(current_setting('test.scout')::uuid);
 select pg_temp.check((select count(*) from public.scouting_findings) = 0, 'removing a round removes its findings');
 reset role;
 
+-- Sign-in mode: demo accounts keep the demo code; new numbers get a real SMS once it is on.
+select pg_temp.check(public.sign_in_mode('+254712345678') = 'demo' and public.sign_in_mode('+254700000999') = 'demo', 'demo mode while SMS is off');
+update public.feature_flags set enabled = true where key = 'sms_auth';
+select pg_temp.check(public.sign_in_mode('+254712345678') = 'demo' and public.sign_in_mode('+254700000999') = 'sms', 'new numbers get a real code once SMS is on');
+update public.feature_flags set enabled = false where key = 'demo_auth';
+select pg_temp.check(public.sign_in_mode('+254712345678') = 'sms', 'demo accounts need a real code once demo sign-in is off');
+update public.feature_flags set enabled = true where key = 'demo_auth';
+update public.feature_flags set enabled = false where key = 'sms_auth';
+
 -- Every public table has RLS on.
 select pg_temp.check(not exists (select 1 from pg_tables where schemaname = 'public' and not rowsecurity), 'RLS is on for every table');

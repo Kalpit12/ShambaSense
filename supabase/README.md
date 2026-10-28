@@ -53,3 +53,21 @@ Secrets (Supabase → Edge Functions → Secrets):
 | `OPENAI_API_KEY` | yes | Key from platform.openai.com. Without it the function answers 503 and checks wait for the agronomist as before. |
 | `OPENAI_MODEL` | no | Defaults to `gpt-5.4-mini`. Must accept images. |
 | `DAILY_CHECKS_PER_FARMER` | no | Photos one farmer can have read in 24 hours. Defaults to 20. |
+
+## SMS sign-in (`functions/send-sms`)
+
+Supabase Auth sends phone sign-in codes through the **Send SMS hook**, which calls this function; it
+sends the code with Africa's Talking. While `AT_USERNAME` is `sandbox` nothing reaches a real phone:
+the message shows in the Africa's Talking simulator for the number you typed. Switching to a live
+Africa's Talking app (paid per SMS) is only a change of `AT_USERNAME` and `AT_API_KEY`.
+
+`20261028230000_sms_sign_in.sql` adds the `sms_auth` flag and `sign_in_mode()`. With demo sign-in on,
+demo accounts keep the code 123456 and new numbers get a real code once `sms_auth` is on:
+`update feature_flags set enabled = true where key = 'sms_auth';`
+
+| Secret | What |
+|---|---|
+| `SEND_SMS_HOOK_SECRET` | The `v1,whsec_...` secret shown when the hook is turned on |
+| `AT_USERNAME` | `sandbox` for testing, the live app's username later |
+| `AT_API_KEY` | API key for that username |
+| `AT_SENDER_ID` | Optional, live only: an approved sender name |

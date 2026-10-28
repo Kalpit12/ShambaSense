@@ -26,7 +26,7 @@ export const en = {
     phoneInvalid: 'Enter a Kenyan mobile number, like 712 345 678.',
     offline: 'No signal. Try again when you have network.',
     genericError: 'Something went wrong. Please try again.',
-    demoAuthBanner: 'Demo accounts: no SMS is sent. Use code 123456.',
+    demoAuthBanner: 'Test version: demo accounts use code 123456.',
     demoBanner: 'Preview mode: no SMS is sent. Use code 123456.',
   },
   signIn: {
