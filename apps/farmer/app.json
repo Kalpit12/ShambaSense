@@ -62,6 +62,12 @@
     "ios": {
       "bundleIdentifier": "tech.nexflora.shambasense",
       "supportsTablet": false
+    },
+    "owner": "kalpit12",
+    "extra": {
+      "eas": {
+        "projectId": "db6ceb6c-45fa-437c-9898-6e7294dfbfc4"
+      }
     }
   }
 }
