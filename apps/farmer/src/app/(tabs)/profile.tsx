@@ -15,6 +15,7 @@ import { Card, SectionTitle } from '@/components/screen';
 import { Sheet } from '@/components/sheet';
 import { SyncChip, syncTime } from '@/components/sync-chip';
 import { forgetPushToken } from '@/lib/alerts';
+import { forgetGuides } from '@/lib/guides';
 import { isPreview, useAuth } from '@/lib/auth';
 import { useFarm } from '@/lib/farm-store';
 import { formatKenya } from '@/lib/phone';
@@ -43,6 +44,7 @@ export default function ProfileScreen() {
   const doSignOut = async () => {
     setConfirming(false);
     await forgetPushToken();
+    await forgetGuides(user?.id ?? user?.phone);
     await clear();
     await signOut();
   };

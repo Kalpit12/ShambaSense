@@ -245,5 +245,50 @@ exception when insufficient_privilege then raise notice 'ok: only the scheduler 
 end $$;
 reset role;
 
+-- Knowledge base: a guide reaches farmers only after someone else reviews it.
+reset role;
+update public.org_farmer_links set status = 'active' where farmer_id = '00000000-0000-0000-0000-00000000000b' and org_id = '00000000-0000-0000-0000-0000000000f1';
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select set_config('test.guide', public.save_guide(null, '00000000-0000-0000-0000-0000000000f1', 'early_blight', 'en', ' Early blight ', array['Remove the lowest leaves.', '  '], null)::text, false);
+select pg_temp.check((select cardinality(steps) from public.guides where id = current_setting('test.guide')::uuid) = 1
+  and (select status from public.guides where id = current_setting('test.guide')::uuid) = 'draft', 'a new guide starts as a draft');
+select public.submit_guide(current_setting('test.guide')::uuid);
+do $$ begin
+  perform public.review_guide(current_setting('test.guide')::uuid, true, null);
+  raise exception 'FAILED: author approved own guide';
+exception when raise_exception then
+  if sqlerrm <> 'own_guide' then raise; end if;
+  raise notice 'ok: nobody approves their own guide';
+end $$;
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.guides where org_id = '00000000-0000-0000-0000-0000000000f1') = 0, 'farmers do not see guides waiting for review');
+do $$ begin
+  perform public.save_guide(null, '00000000-0000-0000-0000-0000000000f1', 'septoria', 'en', 'x', array['y'], null);
+  raise exception 'FAILED: farmer wrote a guide';
+exception when insufficient_privilege then raise notice 'ok: farmers cannot write guides';
+end $$;
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
+select public.review_guide(current_setting('test.guide')::uuid, true, null);
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select title from public.guides where org_id = '00000000-0000-0000-0000-0000000000f1') = 'Early blight', 'a reviewed guide reaches the co-op''s farmers');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select set_config('test.guide2', public.new_guide_version(current_setting('test.guide')::uuid)::text, false);
+select public.save_guide(current_setting('test.guide2')::uuid, null, null, null, 'Early blight', array['Spray mancozeb 50 ml per 20 L.'], null);
+select pg_temp.check((select contains_chemical and version = 2 from public.guides where id = current_setting('test.guide2')::uuid), 'a dose in a guide is flagged');
+select public.submit_guide(current_setting('test.guide2')::uuid);
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
+select public.review_guide(current_setting('test.guide2')::uuid, true, 'ok');
+select pg_temp.check((select status from public.guides where id = current_setting('test.guide')::uuid) = 'retired', 'publishing a new version retires the old one');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.guides where org_id = '00000000-0000-0000-0000-0000000000f1') = 0, 'guides with chemicals stay hidden from farmers');
+select pg_temp.check((select count(*) from public.guides where org_id = '00000000-0000-4000-8000-00000000d000') = 0, 'farmers do not see other co-ops'' guides');
+reset role;
+
 -- Every public table has RLS on.
 select pg_temp.check(not exists (select 1 from pg_tables where schemaname = 'public' and not rowsecurity), 'RLS is on for every table');

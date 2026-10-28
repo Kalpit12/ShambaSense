@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import { AreaChart, LegendDot, MeterBar, Rings } from '@/components/charts';
 import { DarkHero, HeroBody } from '@/components/hero';
-import { CalendarBlankIcon, CameraIcon, CaretRightIcon, CloudSunIcon, NotebookIcon, PlantIcon } from '@/components/icons';
+import { BookOpenTextIcon, CalendarBlankIcon, CameraIcon, CaretRightIcon, CloudSunIcon, NotebookIcon, PlantIcon } from '@/components/icons';
 import { Enter, PressableScale } from '@/components/motion';
 import { CheckRow, RecordRow } from '@/components/record-row';
 import { Card, SectionTitle } from '@/components/screen';
@@ -315,6 +315,21 @@ export default function HomeScreen() {
               </Card>
             </Enter>
           ) : null}
+
+          <Enter step={3}>
+            <Card>
+              <PressableScale onPress={() => router.push('/guides')} accessibilityRole="button" style={styles.task}>
+                <View style={styles.taskIcon}>
+                  <BookOpenTextIcon size={22} color={color.forest900} />
+                </View>
+                <View style={styles.flex}>
+                  <Text style={styles.taskTitle}>{t('guides.entry')}</Text>
+                  <Text style={styles.taskHint}>{t('guides.entryHint')}</Text>
+                </View>
+                <CaretRightIcon size={20} color={color.stone500} />
+              </PressableScale>
+            </Card>
+          </Enter>
         </HeroBody>
       </ScrollView>
     </View>

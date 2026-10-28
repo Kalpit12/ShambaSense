@@ -18,6 +18,7 @@ import { STEP_COUNT, type CheckResult } from '@/lib/check-results';
 import { formatDate, localDay } from '@/lib/dates';
 import { todayIso, useFarm, type CropCheck, type FollowUp } from '@/lib/farm-store';
 import { followUpsOf, followUpState, type FollowUpState } from '@/lib/follow-up';
+import { guideFor, useGuides } from '@/lib/guides';
 import { color, font, radius, space, type } from '@/theme/tokens';
 
 type IconProps = { size?: number; color?: string; weight?: 'regular' | 'fill' | 'bold' };
@@ -36,6 +37,7 @@ export default function ResultScreen() {
   const { checks, followUps, plots, offline, canSend, sendNow, progress, askAgronomist, saveCheckToJournal } = useFarm();
   const [asking, setAsking] = useState(false);
   const [why, setWhy] = useState(false);
+  const { guides } = useGuides();
   const check = checks.find((c) => c.id === id);
   const back = () => (router.canGoBack() ? router.back() : router.replace('/journal'));
 
@@ -51,6 +53,9 @@ export default function ResultScreen() {
   const plot = plots.find((p) => p.id === check.plotId);
   const result = check.status === 'done' ? check.result : undefined;
   const top = result?.causes[0];
+  // A guide the co-op reviewed and published replaces the built-in steps for the top cause.
+  const guide = top ? guideFor(guides, top.id, i18n.language) : undefined;
+  const steps = top ? (guide?.steps ?? Array.from({ length: STEP_COUNT[top.id] }, (_, i) => t(`causes.${top.id}.step${i + 1}`))) : [];
   const stateLabel = result
     ? result.state === 'possible_match'
       ? t(`result.likelihood.${top?.likelihood ?? 'possible'}`)
@@ -156,15 +161,25 @@ export default function ResultScreen() {
             <Enter step={3}>
               <SectionTitle>{t('result.nextSteps')}</SectionTitle>
               <Card style={styles.steps}>
-                {Array.from({ length: STEP_COUNT[top.id] }, (_, i) => (
+                {steps.map((step, i) => (
                   <View key={i} style={styles.step}>
                     <View style={styles.stepNum}>
                       <Text style={styles.stepNumText}>{i + 1}</Text>
                     </View>
-                    <Text style={[styles.body, styles.flex, styles.ink]}>{t(`causes.${top.id}.step${i + 1}`)}</Text>
+                    <Text style={[styles.body, styles.flex, styles.ink]}>{step}</Text>
                   </View>
                 ))}
-                <Text style={styles.source}>{result.preview ? t('result.guidePreview') : t('result.guideReviewed')}</Text>
+                {guide?.warning ? <Text style={[styles.bodyStrong, styles.warnText]}>{guide.warning}</Text> : null}
+                {guide ? (
+                  <PressableScale onPress={() => router.push({ pathname: '/guides/[id]', params: { id: guide.id } })} accessibilityRole="link">
+                    <Text style={styles.source}>
+                      {guide.reviewerName && guide.reviewedOn ? t('guides.reviewed', { name: guide.reviewerName, date: formatDate(guide.reviewedOn, i18n.language) }) : t('result.guideReviewed')}
+                      {guide.coopName ? ` · ${guide.coopName}` : ''}
+                    </Text>
+                  </PressableScale>
+                ) : (
+                  <Text style={styles.source}>{result.preview ? t('result.guidePreview') : t('result.guideReviewed')}</Text>
+                )}
               </Card>
             </Enter>
           </>
@@ -479,4 +494,5 @@ const styles = StyleSheet.create({
   pendingRow: { flexDirection: 'row', alignItems: 'center', gap: space[3] },
   body: { ...type.body, color: color.stone600 },
   bodyStrong: { ...type.bodyEmphasis, color: color.ink },
+  warnText: { fontSize: 16, lineHeight: 22, color: color.amber800 },
 });
