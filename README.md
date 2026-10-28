@@ -13,6 +13,13 @@ dashboard; the answer, and any follow-up photo, flows back to the farmer's phone
 | `docs` | `architecture.md` and `design.md`, the source of truth for both apps. |
 | `brand/logo` | Final logo files. |
 
+## Live (test) links
+
+- Farmer app: https://shambasense-app.vercel.app
+- Dashboard: https://shambasense-dashboard.vercel.app
+
+Both deploy automatically from `main` on Vercel (root directories `apps/farmer` and `apps/dashboard`).
+
 ## Run locally
 
 ```bash
