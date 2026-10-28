@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "923428909107",
+    "project_id": "shambasense-3a6e4",
+    "storage_bucket": "shambasense-3a6e4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:923428909107:android:55f9147b972dff4ac3f346",
+        "android_client_info": {
+          "package_name": "tech.nexflora.shambasense"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChLZJArtrY880nzQixwd5kKLoKqTLkqpg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
