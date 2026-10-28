@@ -315,6 +315,9 @@ export const en = {
     stopWaiting: 'Stop waiting',
     stopHint: 'Your check stays saved. The answer will show in Journal.',
   },
+  alerts: {
+    channel: 'Replies from agronomists',
+  },
   coop: {
     title: 'Co-op',
     none: 'You are not in a co-op on ShambaSense. If your co-op gave you a code, join so its agronomists can see and answer your crop checks.',

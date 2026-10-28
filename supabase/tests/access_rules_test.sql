@@ -209,5 +209,41 @@ select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.check((select count(*) from public.join_org('NJR-1234')) = 0, 'the old code stops working');
 reset role;
 
+-- Reply alerts: the farmer's phone hears about an answer, in the phone's language.
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.register_push_token('ExponentPushToken[aaa]', 'android', 'en');
+select public.register_push_token('ExponentPushToken[aaa]', 'android', 'en');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select public.forget_push_token('ExponentPushToken[aaa]');
+do $$ begin
+  perform public.register_push_token('not a token', 'android', 'sw');
+  raise exception 'FAILED: bad token saved';
+exception when check_violation then raise notice 'ok: only Expo tokens are saved';
+end $$;
+reset role;
+select pg_temp.check((select count(*) from public.push_tokens where user_id = '00000000-0000-0000-0000-00000000000a') = 1, 'a phone registers once, and others cannot remove it');
+delete from net.sent;
+insert into public.issue_events (issue_id, actor_kind, actor_name, kind, body)
+  values ((select id from public.issues where origin_check_id = '40000000-0000-0000-0000-000000000001'), 'agronomist', 'Wanjiru K.', 'review_agree', 'Remove the lower leaves   and burn them.');
+select pg_temp.check((select body -> 0 ->> 'title' from net.sent) = 'Your agronomist replied'
+  and (select body -> 0 ->> 'body' from net.sent) = 'About your tomato check: Remove the lower leaves and burn them.'
+  and (select body -> 0 -> 'data' ->> 'checkId' from net.sent) = '40000000-0000-0000-0000-000000000001', 'an answer sends an alert to the farmer');
+insert into public.issue_events (issue_id, actor_kind, actor_name, kind, body)
+  values ((select id from public.issues where origin_check_id = '40000000-0000-0000-0000-000000000001'), 'farmer', 'Juma', 'comment', 'Asante');
+select pg_temp.check((select count(*) from net.sent) = 1, 'farmer events send no alert');
+update public.push_tokens set language = 'sw';
+update public.issues set follow_up_due_on = (now() at time zone 'Africa/Nairobi')::date, status = 'action_given' where origin_check_id = '40000000-0000-0000-0000-000000000001';
+select pg_temp.check(public.send_follow_up_reminders() = 1, 'due follow-ups get a morning reminder');
+select pg_temp.check((select body -> 0 ->> 'title' from net.sent order by id desc limit 1) = 'Ni wakati wa picha ya ufuatiliaji', 'the reminder is in the phone''s language');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+do $$ begin
+  perform public.send_follow_up_reminders();
+  raise exception 'FAILED: a farmer ran the reminders';
+exception when insufficient_privilege then raise notice 'ok: only the scheduler sends reminders';
+end $$;
+reset role;
+
 -- Every public table has RLS on.
 select pg_temp.check(not exists (select 1 from pg_tables where schemaname = 'public' and not rowsecurity), 'RLS is on for every table');

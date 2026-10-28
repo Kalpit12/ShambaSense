@@ -318,6 +318,9 @@ export const sw: Strings = {
     stopWaiting: 'Acha kusubiri',
     stopHint: 'Ukaguzi wako unabaki umehifadhiwa. Jibu litaonekana kwenye Kumbukumbu.',
   },
+  alerts: {
+    channel: 'Majibu ya wataalamu',
+  },
   coop: {
     title: 'Chama cha ushirika',
     none: 'Hujajiunga na chama cha ushirika kwenye ShambaSense. Kama chama chako kimekupa nambari, jiunge ili wataalamu wake waone na kujibu ukaguzi wako wa mazao.',

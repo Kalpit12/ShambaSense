@@ -14,6 +14,7 @@ import { LanguageTiles } from '@/components/language-tiles';
 import { Card, SectionTitle } from '@/components/screen';
 import { Sheet } from '@/components/sheet';
 import { SyncChip, syncTime } from '@/components/sync-chip';
+import { forgetPushToken } from '@/lib/alerts';
 import { isPreview, useAuth } from '@/lib/auth';
 import { useFarm } from '@/lib/farm-store';
 import { formatKenya } from '@/lib/phone';
@@ -41,6 +42,7 @@ export default function ProfileScreen() {
 
   const doSignOut = async () => {
     setConfirming(false);
+    await forgetPushToken();
     await clear();
     await signOut();
   };

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { initI18n } from '@/i18n';
+import { native, ReplyAlerts } from '@/lib/alerts';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { FarmStoreProvider } from '@/lib/farm-store';
 import { color } from '@/theme/tokens';
@@ -87,6 +88,7 @@ function RootStack() {
         <Stack.Screen name="result/[id]" options={{ animation: 'slide_from_right', animationDuration: 240 }} />
       </Stack.Protected>
     </Stack>
+    {native && user?.onboarded ? <ReplyAlerts userId={user.id} /> : null}
     </FarmStoreProvider>
   );
 }
