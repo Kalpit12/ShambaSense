@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 
 import type { Session } from '@supabase/supabase-js';
 
+import { loadOrg, SAMPLE_ORG, type Org } from './coop';
 import { loadIssues, supabase } from './remote';
 import { ME, sampleIssues } from './sample';
 import { safetyFlags } from './safety';
@@ -27,13 +28,17 @@ type Store = {
   /** 'sample' runs on sample data; 'connected' reads Supabase as the signed-in org member. */
   mode: 'sample' | 'connected';
   session: Session | null;
-  /** Connected mode only: still finding out whether someone is signed in. */
+  /** The signed-in member's co-op and role. Null when they are on no team yet. */
+  org: Org | null;
+  /** Connected mode only: still finding out whether someone is signed in, and to which org. */
   checking: boolean;
   error: string | null;
   review: (id: string, r: Review) => void;
   assignToMe: (id: string) => void;
   setStatus: (id: string, status: IssueStatus) => void;
   reset: () => void;
+  /** Reads the org again, after a rename, a new join code or setting one up. */
+  reloadOrg: () => Promise<void>;
 };
 
 const KEY = 'shambasense.dashboard.v1';
@@ -52,6 +57,8 @@ function load(): Issue[] {
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [session, setSession] = useState<Session | null>(null);
+  const [org, setOrg] = useState<Org | null>(null);
+  const [orgFor, setOrgFor] = useState<string | null>(null);
   const [checking, setChecking] = useState(!!supabase);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,6 +84,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
     return () => data.subscription.unsubscribe();
   }, []);
+
+  const reloadOrg = useCallback(async () => {
+    if (!supabase || !session) return;
+    try {
+      setOrg(await loadOrg(supabase, session.user.id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load your co-op');
+    }
+    setOrgFor(session.user.id);
+  }, [session]);
+
+  useEffect(() => {
+    if (session) reloadOrg();
+    else {
+      setOrg(null);
+      setOrgFor(null);
+    }
+  }, [session, reloadOrg]);
 
   // Signed in: load, then look for new cases every 20 s. Rows never animate in (design.md §5.6).
   useEffect(() => {
@@ -122,8 +147,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         issues,
         mode: 'connected',
         session,
-        checking,
+        org,
+        checking: checking || (!!session && orgFor !== session.user.id),
         error,
+        reloadOrg,
         review: (id, r) => call('review_issue', { p_issue: id, p_kind: r.kind, p_cause_ids: r.causeIds, p_body: r.body, p_follow_up_days: r.followUpDays }),
         assignToMe: (id) => call('assign_issue_to_me', { p_issue: id }),
         setStatus: (id, status) => call('set_issue_status', { p_issue: id, p_status: status }),
@@ -133,8 +160,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       issues,
       mode: 'sample',
       session: null,
+      org: SAMPLE_ORG,
       checking: false,
       error: null,
+      reloadOrg: async () => {},
       review: (id, r) =>
         change(id, (i) => {
           const at = new Date();
@@ -168,7 +197,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setIssues(sampleIssues());
       },
     };
-  }, [issues, change, session, checking, error, call, refresh]);
+  }, [issues, change, session, org, orgFor, checking, error, call, refresh, reloadOrg]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

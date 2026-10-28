@@ -45,6 +45,8 @@ export type IssueEvent = {
 
 export type Issue = {
   id: string;
+  /** The farmer's user id (connected mode); sample data matches farmers by name. */
+  farmerId?: string;
   code: string;
   title: string;
   farmer: Farmer;

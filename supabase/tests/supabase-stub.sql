@@ -7,7 +7,7 @@ create schema auth;
 create table auth.users (
   id uuid primary key, instance_id uuid, aud text, role text, phone text unique, email text, encrypted_password text,
   email_confirmed_at timestamptz, phone_confirmed_at timestamptz, raw_app_meta_data jsonb, raw_user_meta_data jsonb default '{}',
-  created_at timestamptz, updated_at timestamptz, confirmation_token text, recovery_token text, email_change_token_new text,
+  created_at timestamptz, updated_at timestamptz, last_sign_in_at timestamptz, confirmation_token text, recovery_token text, email_change_token_new text,
   email_change text, phone_change text, phone_change_token text, email_change_token_current text, reauthentication_token text
 );
 create table auth.identities (

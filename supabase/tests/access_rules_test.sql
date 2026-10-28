@@ -139,5 +139,75 @@ insert into public.crop_checks (id, farm_id, crop_claimed, captured_at, created_
 insert into public.check_results (check_id, model_version, state) values ('40000000-0000-0000-0000-000000000002', 'tomato-2026.10', 'expert_review_required');
 select pg_temp.check((select count(*) from public.issues where origin_check_id = '40000000-0000-0000-0000-000000000002') = 1, 'no-answer result opens an issue');
 
+-- Co-op setup: team roles, invites, join codes.
+reset role;
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000c2', 'owner@njoro.example');
+insert into public.org_members values ('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000c2', 'owner', 'Owner N.');
+update public.orgs set join_code = 'NJR-1234' where id = '00000000-0000-0000-0000-0000000000f1';
+update public.feature_flags set enabled = false where key = 'demo_auth';
+
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+do $$ begin
+  perform public.invite_member('00000000-0000-0000-0000-0000000000f1', 'x@y.example', 'agronomist', 'X');
+  raise exception 'FAILED: agronomist invited someone';
+exception when insufficient_privilege then raise notice 'ok: only admins invite';
+end $$;
+select pg_temp.check((select count(*) from public.org_team('00000000-0000-0000-0000-0000000000f1')) = 2, 'members see the team');
+
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
+select pg_temp.check(public.invite_member('00000000-0000-0000-0000-0000000000f1', ' Chebet@Njoro.example ', 'field_officer', 'Chebet') = 'invited', 'new email waits as an invite');
+select pg_temp.check((select count(*) from public.org_invites) = 1, 'admin sees the invite');
+reset role;
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000c3', 'chebet@njoro.example');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c3');
+select pg_temp.check(public.claim_invites() = 1 and public.claim_invites() = 0, 'claim runs once');
+reset role;
+select pg_temp.check((select role from public.org_members where user_id = '00000000-0000-0000-0000-0000000000c3') = 'field_officer', 'signing in claims the invite');
+update public.feature_flags set enabled = true where key = 'demo_auth';
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
+select pg_temp.check(public.invite_member('00000000-0000-0000-0000-0000000000f1', 'otieno@njoro.example', 'agronomist', 'Otieno M.') = 'added', 'demo mode makes the account at once');
+select public.set_member_role('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000c1', 'admin');
+do $$ begin
+  perform public.set_member_role('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000c2', 'admin');
+  raise exception 'FAILED: last owner demoted';
+exception when raise_exception then
+  if sqlerrm <> 'last_owner' then raise; end if;
+  raise notice 'ok: the last owner stays';
+end $$;
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+do $$ begin
+  perform public.set_member_role('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000c3', 'owner');
+  raise exception 'FAILED: admin made an owner';
+exception when insufficient_privilege then raise notice 'ok: only owners give the owner role';
+end $$;
+select public.remove_member('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-0000000000c3');
+select pg_temp.check((select count(*) from public.org_members where org_id = '00000000-0000-0000-0000-0000000000f1') = 3, 'admin removes a field officer');
+
+-- Farmer B joins with the code, shows in the co-op's farmer list, then leaves.
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.join_org('NJR-9999')) = 0, 'wrong code joins nothing');
+select pg_temp.check((select name from public.find_org_by_code('njr-1234')) = 'Njoro Growers Co-op' and (select count(*) from public.my_coops()) = 0, 'looking up a code shows the name without joining');
+select pg_temp.check((select name from public.join_org(' njr1234 ')) = 'Njoro Growers Co-op', 'code works in any case, without the dash');
+select pg_temp.check((select count(*) from public.my_coops()) = 1 and (select count(*) from public.consents where kind = 'org_share' and withdrawn_at is null) = 1, 'joining records the agreement');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.check((select phone from public.org_farmers('00000000-0000-0000-0000-0000000000f1')) = '+254700000002', 'co-op sees the new farmer');
+select pg_temp.check((select count(*) from public.org_farmers('00000000-0000-4000-8000-00000000d000')) = 0 and (select count(*) from public.org_team('00000000-0000-4000-8000-00000000d000')) = 0, 'other orgs stay hidden');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select public.leave_org('00000000-0000-0000-0000-0000000000f1');
+select pg_temp.check((select count(*) from public.my_coops()) = 0 and (select count(*) from public.consents where kind = 'org_share' and withdrawn_at is null) = 0, 'leaving withdraws the agreement');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.check((select count(*) from public.org_farmers('00000000-0000-0000-0000-0000000000f1')) = 0, 'a farmer who left is gone from the list');
+select pg_temp.check(public.norm_code(public.regenerate_join_code('00000000-0000-0000-0000-0000000000f1')) <> 'NJR1234', 'admin changes the code');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.join_org('NJR-1234')) = 0, 'the old code stops working');
+reset role;
+
 -- Every public table has RLS on.
 select pg_temp.check(not exists (select 1 from pg_tables where schemaname = 'public' and not rowsecurity), 'RLS is on for every table');

@@ -19,6 +19,7 @@ export const DEMO_AUTH = process.env.NEXT_PUBLIC_DEMO_AUTH === '1';
 export const DEMO_CODE = '123456';
 export const DEMO_PASSWORD = 'shamba-demo-123456';
 export const DEMO_EMAIL = 'agronomist.demo@example.com';
+export const DEMO_ADMIN_EMAIL = 'admin.demo@example.com';
 
 const PHOTO_URL_SECONDS = 600;
 
@@ -79,6 +80,7 @@ export async function loadIssues(client: SupabaseClient): Promise<Issue[]> {
       }));
     return {
       id: i.id,
+      farmerId: farm?.owner_id ?? undefined,
       code: i.code,
       title: i.title,
       farmer: { name: profile?.display_name ?? 'Farmer', phone: '', language: profile?.language === 'en' ? 'en' : 'sw', county: profile?.county ?? farm?.county ?? '', ward: profile?.ward ?? farm?.ward ?? '' },

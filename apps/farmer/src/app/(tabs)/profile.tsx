@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { LockupOnLight } from '@/components/brand';
+import { CoopCard } from '@/components/coop-card';
 import { Button } from '@/components/button';
 import { DarkHero, GlassPanel, HeroBody, onForestMuted } from '@/components/hero';
 import { SignOutIcon } from '@/components/icons';
@@ -110,6 +111,10 @@ export default function ProfileScreen() {
               </Card>
             </Enter>
           ) : null}
+
+          <Enter step={3}>
+            <CoopCard signedIn={!!user?.id} />
+          </Enter>
 
           <Enter step={3}>
             <SectionTitle>{t('profile.sync')}</SectionTitle>

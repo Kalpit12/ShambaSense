@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 
-import { DEMO_AUTH, DEMO_CODE, DEMO_EMAIL, DEMO_PASSWORD, supabase } from '@/lib/remote';
+import { DEMO_ADMIN_EMAIL, DEMO_AUTH, DEMO_CODE, DEMO_EMAIL, DEMO_PASSWORD, supabase } from '@/lib/remote';
 import { Lockup } from './brand';
 
-// Org members sign in with an email code (architecture.md §3.3). Accounts are created by an org
-// admin; this screen never creates one.
+// Org members sign in with an email code (architecture.md §3.3). A first sign-in makes the account;
+// an invite from an admin then puts it on the team, or the person sets up a new co-op.
 export function SignIn() {
   const [email, setEmail] = useState(DEMO_AUTH ? DEMO_EMAIL : '');
   const [code, setCode] = useState('');
@@ -19,9 +19,9 @@ export function SignIn() {
     if (DEMO_AUTH) return setSent(true);
     setBusy(true);
     setError(null);
-    const { error: e } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false } });
+    const { error: e } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } });
     setBusy(false);
-    if (e) setError(/signups not allowed|not found/i.test(e.message) ? 'No dashboard account uses this email. Ask your org admin to add you.' : e.message);
+    if (e) setError(e.message);
     else setSent(true);
   };
 
@@ -36,7 +36,7 @@ export function SignIn() {
       }
       const { error: e } = await supabase.auth.signInWithPassword({ email: email.trim(), password: DEMO_PASSWORD });
       setBusy(false);
-      if (e) setError('No demo account uses this email.');
+      if (e) setError('No demo account uses this email. Ask an admin to add you on the Team page.');
       return;
     }
     const { error: e } = await supabase.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: 'email' });
@@ -58,6 +58,11 @@ export function SignIn() {
             <button className="btn btn-primary" disabled={busy || !email}>
               Send code
             </button>
+            {DEMO_AUTH ? (
+              <p className="muted meta">
+                Demo accounts: {DEMO_EMAIL} (agronomist) or {DEMO_ADMIN_EMAIL} (co-op owner, can add people). People an admin adds sign in with their own email.
+              </p>
+            ) : null}
           </form>
         ) : (
           <form onSubmit={(e) => (e.preventDefault(), verify())}>
