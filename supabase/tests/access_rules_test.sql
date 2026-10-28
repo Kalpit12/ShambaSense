@@ -346,5 +346,34 @@ select pg_temp.check((select count(*) from public.my_tasks()) = 0, 'leaving the 
 reset role;
 update public.org_farmer_links set status = 'active' where farmer_id = '00000000-0000-0000-0000-00000000000a';
 
+-- Scouting: the team logs counts per plot; farmers never read them.
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select set_config('test.visit2', public.save_task(null, '00000000-0000-0000-0000-0000000000f1', 'visit', '00000000-0000-0000-0000-00000000000a', null, null,
+  'Scout tomatoes', null, current_date, null)::text, false);
+select set_config('test.scout', public.save_scouting('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-00000000000a', null, 'tomatoes', current_date, 20, ' After rain ',
+  '[{"cause_id": "early_blight", "plants_affected": 6, "severity": "medium"}, {"cause_id": "tuta", "plants_affected": 1, "severity": "low"}]', current_setting('test.visit2')::uuid)::text, false);
+select pg_temp.check((select jsonb_array_length(findings) from public.org_scouting('00000000-0000-0000-0000-0000000000f1', null) where id = current_setting('test.scout')::uuid) = 2, 'a round is logged with its findings');
+select pg_temp.check((select status || '|' || outcome from public.tasks where id = current_setting('test.visit2')::uuid) = 'done|Scouted 20 plants: Early blight 6/20, Tomato leaf miner (Tuta) 1/20. After rain', 'logging from a visit closes it with a summary');
+do $$ begin
+  perform public.save_scouting('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-00000000000a', null, 'tomatoes', current_date, 5,
+    null, '[{"cause_id": "septoria", "plants_affected": 9, "severity": "low"}]', null);
+  raise exception 'FAILED: more affected than checked';
+exception when invalid_parameter_value then raise notice 'ok: affected plants cannot exceed plants checked';
+end $$;
+select pg_temp.check((select count(*) from public.scouting_reports where org_id = '00000000-0000-0000-0000-0000000000f1') = 1, 'a refused round leaves nothing behind');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select count(*) from public.scouting_reports) = 0 and (select count(*) from public.scouting_findings) = 0, 'farmers do not read scouting');
+do $$ begin
+  perform public.save_scouting('00000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-00000000000a', null, 'tomatoes', current_date, 5, null, '[]', null);
+  raise exception 'FAILED: farmer logged scouting';
+exception when insufficient_privilege then raise notice 'ok: farmers cannot log scouting';
+end $$;
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+select public.delete_scouting(current_setting('test.scout')::uuid);
+select pg_temp.check((select count(*) from public.scouting_findings) = 0, 'removing a round removes its findings');
+reset role;
+
 -- Every public table has RLS on.
 select pg_temp.check(not exists (select 1 from pg_tables where schemaname = 'public' and not rowsecurity), 'RLS is on for every table');

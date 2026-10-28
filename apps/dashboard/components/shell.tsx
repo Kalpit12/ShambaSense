@@ -7,12 +7,12 @@ import { supabase } from '@/lib/remote';
 import { useStore } from '@/lib/store';
 import { Lockup } from './brand';
 
-export type View = 'overview' | 'issues' | 'farmers' | 'team' | 'reports' | 'knowledge' | 'tasks';
+export type View = 'overview' | 'issues' | 'farmers' | 'team' | 'reports' | 'knowledge' | 'tasks' | 'scouting';
 
 const NAV: { key: string; label: string; view?: View }[] = [
   { key: 'overview', label: 'Overview', view: 'overview' },
   { key: 'farmers', label: 'Farmers', view: 'farmers' },
-  { key: 'scouting', label: 'Scouting' },
+  { key: 'scouting', label: 'Scouting', view: 'scouting' },
   { key: 'issues', label: 'Crop issues', view: 'issues' },
   { key: 'tasks', label: 'Tasks', view: 'tasks' },
   { key: 'reports', label: 'Reports', view: 'reports' },

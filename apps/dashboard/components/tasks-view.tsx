@@ -409,12 +409,17 @@ function TaskDetail({
           </div>
         ) : (
           <div className="status-actions">
+            {t.kind === 'visit' ? (
+              <a className="btn btn-primary" href={`#scouting?${new URLSearchParams({ new: '1', farmer: t.farmerId, task: t.id, ...(t.plotId ? { plot: t.plotId } : {}) })}`}>
+                Log scouting
+              </a>
+            ) : null}
             {t.status !== 'in_progress' ? (
               <button className="btn btn-secondary" onClick={() => move('in_progress', '', 'Marked in progress.')}>
                 {t.status === 'blocked' ? 'Unblock' : 'Start'}
               </button>
             ) : null}
-            <button className="btn btn-primary" onClick={() => setAsking('done')}>
+            <button className={`btn ${t.kind === 'visit' ? 'btn-secondary' : 'btn-primary'}`} onClick={() => setAsking('done')}>
               Mark done
             </button>
             {t.status !== 'blocked' ? (
