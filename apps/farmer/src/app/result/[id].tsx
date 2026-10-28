@@ -178,7 +178,7 @@ export default function ResultScreen() {
                     </Text>
                   </PressableScale>
                 ) : (
-                  <Text style={styles.source}>{result.preview ? t('result.guidePreview') : t('result.guideReviewed')}</Text>
+                  <Text style={styles.source}>{result.preview ? t('result.guidePreview') : t('result.guideBuiltIn')}</Text>
                 )}
               </Card>
             </Enter>

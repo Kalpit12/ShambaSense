@@ -450,6 +450,7 @@ export const sw: Strings = {
     causes: 'Visababishi vinavyowezekana',
     nextSteps: 'Hatua zinazofuata',
     guideReviewed: 'Kutoka kwa miongozo iliyokaguliwa na wataalamu.',
+    guideBuiltIn: 'Hatua za ShambaSense. Ushirika wako bado haujachapisha mwongozo wake kuhusu hili.',
     guidePreview: 'Mwongozo wa majaribio. Unasubiri ukaguzi wa mtaalamu kabla ya majaribio shambani.',
     askAgronomist: 'Uliza mtaalamu',
     saveToJournal: 'Hifadhi kwenye kumbukumbu',

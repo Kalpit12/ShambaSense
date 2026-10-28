@@ -447,6 +447,7 @@ export const en = {
     causes: 'Possible causes',
     nextSteps: 'Next steps',
     guideReviewed: 'From guides reviewed by agronomists.',
+    guideBuiltIn: 'Built-in ShambaSense steps. Your co-op has not published its own guide for this yet.',
     guidePreview: 'Preview guide. Waiting for agronomist review before the pilot.',
     askAgronomist: 'Ask an agronomist',
     saveToJournal: 'Save to journal',
