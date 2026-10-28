@@ -3,7 +3,7 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react';
 
 import i18n, { type Language } from '@/i18n';
 import { supabase, useAuth } from './auth';
-import { CAUSES, STEP_COUNT } from './check-results';
+import { CAUSE_CROP, CAUSES, STEP_COUNT } from './check-results';
 
 // Crop guides (architecture.md §5.4). The server only hands a farmer guides that a second person on
 // their co-op's team reviewed, so everything here can be shown as is. They are kept on the phone and
@@ -37,7 +37,7 @@ const publish = (next: Partial<Cache>) => {
 };
 const subscribe = (l: () => void) => (listeners.add(l), () => listeners.delete(l));
 
-/** Preview mode has no server: the four tomato causes, from the app's own (unreviewed) text. */
+/** Preview mode has no server: every library cause, from the app's own (unreviewed) text. */
 function previewGuides(): Guide[] {
   return CAUSES.flatMap((id) =>
     (['en', 'sw'] as const).map((language) => {
@@ -45,7 +45,7 @@ function previewGuides(): Guide[] {
       return {
         id: `preview-${id}-${language}`,
         causeId: id,
-        crop: 'tomatoes',
+        crop: CAUSE_CROP[id],
         causeName: { en: i18n.getFixedT('en')(`causes.${id}.name`), sw: i18n.getFixedT('sw')(`causes.${id}.name`) },
         language,
         version: 1,

@@ -12,16 +12,33 @@ import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 
 const MODEL = Deno.env.get('OPENAI_MODEL') || 'gpt-5.4-mini';
 const DAILY_LIMIT = Number(Deno.env.get('DAILY_CHECKS_PER_FARMER') || 20);
-const LIBRARY = 'tomato-2026.10';
+const LIBRARY = 'library-2026.10';
 
 // The reviewed library: the causes the farmer app has names, signs and steps for. Signs match the
-// app's English text so the model and the result screen describe the same thing.
+// app's English text so the model and the result screen describe the same thing. Keep in step with
+// CAUSES in apps/farmer/src/lib/check-results.ts.
+const APHIDS = 'Aphids (pest): groups of small green or black insects under the leaves and on new shoots; curled, sticky leaves; ants walking up and down the plants.';
 const LIBRARY_CAUSES: Record<string, Record<string, string>> = {
   tomatoes: {
     early_blight: 'Early blight (Alternaria solani): brown spots on the older, lower leaves; rings inside the spots like a target; a yellow edge around some spots.',
     late_blight: 'Late blight (Phytophthora infestans): large dark patches that look wet; spreads fast in cool, wet weather; firm brown patches on the fruit; may show white mould under leaves.',
     septoria: 'Septoria leaf spot (Septoria lycopersici): many small round spots with a dark edge; a grey or pale centre in each spot; starts on the lowest leaves.',
     tuta: 'Tomato leaf miner, Tuta absoluta (pest): pale, see-through blotches (mines) inside the leaf; small dark droppings inside the mines; small holes in the fruit.',
+  },
+  maize: {
+    fall_armyworm: 'Fall armyworm, Spodoptera frugiperda (pest): ragged holes and see-through windows in young leaves; wet sawdust-like droppings in the leaf funnel; caterpillar with a pale upside-down Y on its head.',
+    maize_streak: 'Maize streak virus: thin pale yellow streaks running along the leaf, often broken like dashes; streaks join up on the newest leaves; young plants stay short.',
+    mln: 'Maize lethal necrosis (MCMV + SCMV): yellow mottling starting at the leaf edges; leaves dry from the edges inward and the top leaves die ("dead heart"); small cobs with few grains.',
+    nitrogen: 'Nitrogen shortage: yellowing that starts at the tip of the older, lower leaves and runs along the midrib in a V; pale, thin plants; newer leaves stay greener.',
+  },
+  beans: {
+    bean_rust: 'Bean rust (Uromyces appendiculatus): small rusty-brown raised pustules, mostly under the leaves, often with a yellow halo; brown powder rubs off; leaves yellow and drop early.',
+    angular_leaf_spot: 'Angular leaf spot (Pseudocercospora griseola): grey or brown spots with straight edges boxed in by the veins; spots join and the leaf yellows; dark round spots with red-brown edges on pods.',
+    aphids: APHIDS,
+  },
+  kale: {
+    black_rot: 'Black rot (Xanthomonas campestris): yellow V-shaped patches starting at the leaf edge, pointing inward; black veins inside the yellow patches; lower leaves wilt and fall.',
+    aphids: APHIDS,
   },
 };
 
