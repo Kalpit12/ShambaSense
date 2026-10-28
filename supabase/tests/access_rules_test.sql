@@ -393,5 +393,41 @@ reset role;
 select pg_temp.check((select count(*) from public.app_errors) = 1 and (select length(message) from public.app_errors) = 1000
   and (select user_id from public.app_errors) = '00000000-0000-0000-0000-00000000000a', 'errors are logged trimmed, with the user');
 
+-- Co-op settings: admins save the details, members set their own name, farmers see the phone number.
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
+select public.update_org_settings('00000000-0000-0000-0000-0000000000f1', '  Njoro Growers ', 'coop', 'Nakuru', '0712 345 678', array['maize', 'tomatoes', 'maize']);
+select pg_temp.check((select name || '|' || county || '|' || contact_phone || '|' || array_to_string(crops, ',') from public.orgs where id = '00000000-0000-0000-0000-0000000000f1')
+  = 'Njoro Growers|Nakuru|+254712345678|maize,tomatoes', 'an admin saves the co-op details, tidied');
+do $$ begin
+  perform public.update_org_settings('00000000-0000-0000-0000-0000000000f1', 'Njoro', 'coop', null, '12345', array['maize']);
+  raise exception 'FAILED: bad phone saved';
+exception when invalid_parameter_value then raise notice 'ok: a phone number that is not Kenyan is refused';
+end $$;
+do $$ begin
+  perform public.update_org_settings('00000000-0000-0000-0000-0000000000f1', 'Njoro', 'coop', null, null, array['coffee']);
+  raise exception 'FAILED: unknown crop saved';
+exception when invalid_parameter_value then raise notice 'ok: only crops with photo checks can be chosen';
+end $$;
+reset role;
+update public.org_members set role = 'agronomist' where user_id = '00000000-0000-0000-0000-0000000000c1';
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
+do $$ begin
+  perform public.update_org_settings('00000000-0000-0000-0000-0000000000f1', 'Taken over', 'coop', null, null, array['maize']);
+  raise exception 'FAILED: agronomist changed settings';
+exception when insufficient_privilege then raise notice 'ok: only admins change co-op settings';
+end $$;
+select public.set_my_display_name('00000000-0000-0000-0000-0000000000f1', ' Dr. Wanjiru K. ');
+reset role;
+select pg_temp.check((select display_name from public.org_members where user_id = '00000000-0000-0000-0000-0000000000c1') = 'Dr. Wanjiru K.', 'a member changes the name farmers see');
+update public.org_members set role = 'admin', display_name = 'Wanjiru K.' where user_id = '00000000-0000-0000-0000-0000000000c1';
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select contact_phone from public.my_coops() where id = '00000000-0000-0000-0000-0000000000f1') = '+254712345678', 'farmers see their co-op''s phone number');
+do $$ begin
+  perform public.set_my_display_name('00000000-0000-0000-0000-0000000000f1', 'Sneaky');
+  raise exception 'FAILED: farmer renamed themselves in the org';
+exception when insufficient_privilege then raise notice 'ok: only members have a team name';
+end $$;
+reset role;
+
 -- Every public table has RLS on.
 select pg_temp.check(not exists (select 1 from pg_tables where schemaname = 'public' and not rowsecurity), 'RLS is on for every table');

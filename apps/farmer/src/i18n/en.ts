@@ -343,6 +343,7 @@ export const en = {
     title: 'Co-op',
     none: 'You are not in a co-op on ShambaSense. If your co-op gave you a code, join so its agronomists can see and answer your crop checks.',
     joined: 'Joined {{date}}',
+    call: 'Call {{phone}}',
     join: 'Join a co-op',
     leave: 'Leave',
     codeTitle: 'Join a co-op',

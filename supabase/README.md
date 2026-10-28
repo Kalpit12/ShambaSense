@@ -85,3 +85,10 @@ The Home screen shows a 3-day forecast for the farm's county. `weather` takes `{
 county headquarters, and asks MET Norway's free Locationforecast API (CC BY 4.0, commercial use allowed,
 credited on the card). Each county is cached for an hour per function instance, as MET asks. No secrets,
 no tables; `verify_jwt` is on. The app keeps the last forecast on the phone and refreshes it every 3 hours.
+
+## Co-op settings (`20261029090000_coop_settings.sql`)
+
+Adds `county`, `contact_phone` and `crops` to `orgs`. Admins save them with `update_org_settings` (it
+tidies phone numbers to +2547... and only accepts the six photo-check crops); any member sets the name
+farmers see with `set_my_display_name`. `my_coops()` now returns the co-op's phone so the farmer app can
+offer a Call link. The dashboard still signs in before this migration runs, with all crops on.

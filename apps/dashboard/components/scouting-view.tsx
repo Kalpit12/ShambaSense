@@ -47,6 +47,7 @@ function readPrefill(): Partial<Draft> | null {
 /** Scouting (design.md §10): rounds logged in the field, added up by ward to spot outbreaks early. */
 export function ScoutingView({ search }: { search: string }) {
   const { org } = useStore();
+  const crops = org?.crops.length ? org.crops : CROPS;
   const [days, setDays] = useState<number>(14);
   const [crop, setCrop] = useState<Crop | 'all'>('all');
   const [rounds, setRounds] = useState<Round[]>([]);
@@ -151,7 +152,7 @@ export function ScoutingView({ search }: { search: string }) {
             <span className="sr-only">Crop</span>
             <select value={crop} onChange={(e) => setCrop(e.target.value as Crop | 'all')}>
               <option value="all">All crops</option>
-              {CROPS.map((c) => (
+              {crops.map((c) => (
                 <option key={c} value={c}>
                   {CROP_NAME[c]}
                 </option>
@@ -396,12 +397,14 @@ function RoundForm({
   plotsOf: (farmerId: string) => Promise<Plot[]>;
   onSave: (d: Draft) => Promise<void>;
 }) {
-  const firstCrop = (id: string) => (farmers.find((f) => f.id === id)?.crops.find((c) => c in CROP_NAME) as Crop | undefined) ?? 'tomatoes';
+  const { org } = useStore();
+  const crops = org?.crops.length ? org.crops : CROPS;
+  const firstCrop = (id: string) => (farmers.find((f) => f.id === id)?.crops.find((c) => crops.includes(c as Crop)) as Crop | undefined) ?? crops[0];
   const [d, setD] = useState<Draft>(() => ({
     farmerId: prefill.farmerId ?? '',
     plotId: prefill.plotId ?? null,
     taskId: prefill.taskId ?? null,
-    crop: prefill.farmerId ? firstCrop(prefill.farmerId) : 'tomatoes',
+    crop: prefill.farmerId ? firstCrop(prefill.farmerId) : crops[0],
     observedOn: today(),
     checked: 20,
     note: '',
@@ -469,7 +472,7 @@ function RoundForm({
         <label className="field">
           <span className="field-label">Crop</span>
           <select value={d.crop} onChange={(e) => (set({ crop: e.target.value as Crop }), setCounts({}))}>
-            {CROPS.map((c) => (
+            {crops.map((c) => (
               <option key={c} value={c}>
                 {CROP_NAME[c]}
               </option>

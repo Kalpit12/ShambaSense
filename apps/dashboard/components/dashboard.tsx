@@ -10,13 +10,14 @@ import { NoOrg } from './no-org';
 import { KnowledgeView } from './knowledge-view';
 import { ReportsView } from './reports-view';
 import { ScoutingView } from './scouting-view';
+import { SettingsView } from './settings-view';
 import { TasksView } from './tasks-view';
 import { Overview } from './overview';
 import { Shell, type View } from './shell';
 import { SignIn } from './sign-in';
 import { TeamView } from './team-view';
 
-const HASH_VIEWS: View[] = ['overview', 'farmers', 'team', 'reports', 'knowledge', 'tasks', 'scouting'];
+const HASH_VIEWS: View[] = ['overview', 'farmers', 'team', 'reports', 'knowledge', 'tasks', 'scouting', 'settings'];
 
 // Views switch on the client while the dashboard runs on sample data, so the export is one page.
 // With Supabase they become App Router routes (/overview, /issues/[code]) read on the server.
@@ -83,6 +84,8 @@ function Gate() {
           <FarmersView search={search} onOpenCase={open} />
         ) : view === 'team' ? (
           <TeamView />
+        ) : view === 'settings' ? (
+          <SettingsView />
         ) : view === 'reports' ? (
           <ReportsView />
         ) : view === 'knowledge' ? (

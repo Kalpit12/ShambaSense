@@ -7,7 +7,7 @@ import { supabase } from '@/lib/remote';
 import { useStore } from '@/lib/store';
 import { Lockup } from './brand';
 
-export type View = 'overview' | 'issues' | 'farmers' | 'team' | 'reports' | 'knowledge' | 'tasks' | 'scouting';
+export type View = 'overview' | 'issues' | 'farmers' | 'team' | 'reports' | 'knowledge' | 'tasks' | 'scouting' | 'settings';
 
 const NAV: { key: string; label: string; view?: View }[] = [
   { key: 'overview', label: 'Overview', view: 'overview' },
@@ -18,7 +18,7 @@ const NAV: { key: string; label: string; view?: View }[] = [
   { key: 'reports', label: 'Reports', view: 'reports' },
   { key: 'team', label: 'Team', view: 'team' },
   { key: 'knowledge', label: 'Knowledge base', view: 'knowledge' },
-  { key: 'settings', label: 'Settings' },
+  { key: 'settings', label: 'Settings', view: 'settings' },
 ];
 
 /** Left nav 240 px and top bar (design.md §8.2). Pages not built yet stay visible but marked "Later". */

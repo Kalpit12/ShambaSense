@@ -345,6 +345,7 @@ export const sw: Strings = {
   coop: {
     title: 'Chama cha ushirika',
     none: 'Hujajiunga na chama cha ushirika kwenye ShambaSense. Kama chama chako kimekupa nambari, jiunge ili wataalamu wake waone na kujibu ukaguzi wako wa mazao.',
+    call: 'Piga simu {{phone}}',
     joined: 'Ulijiunga {{date}}',
     join: 'Jiunge na chama',
     leave: 'Ondoka',

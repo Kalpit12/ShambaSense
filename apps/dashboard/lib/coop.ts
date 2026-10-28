@@ -1,5 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { CROP_NAME } from './causes';
+import type { Crop } from './types';
+
 // The co-op itself: who is on the team, who is invited, and which farmers have joined. Connected mode
 // reads these through the org_team / org_farmers functions and changes them through the admin
 // functions in the coop_setup migration, which check the role and write the audit line.
@@ -24,7 +27,23 @@ export const ROLE_HINT: Record<Role, string> = {
 
 export const ROLES: Role[] = ['owner', 'admin', 'agronomist', 'field_officer', 'viewer'];
 
-export type Org = { id: string; name: string; joinCode: string; role: Role; myName: string; myId: string };
+export type OrgKind = 'coop' | 'ngo' | 'agribusiness';
+export const KIND_LABEL: Record<OrgKind, string> = { coop: 'Co-operative', ngo: 'NGO or programme', agribusiness: 'Agribusiness' };
+export const ALL_CROPS = Object.keys(CROP_NAME) as Crop[];
+
+export type Org = {
+  id: string;
+  name: string;
+  joinCode: string;
+  role: Role;
+  myName: string;
+  myId: string;
+  kind: OrgKind;
+  county: string | null;
+  contactPhone: string | null;
+  /** Crops the co-op works with; the dashboard's crop pickers show only these. */
+  crops: Crop[];
+};
 export type Member = { userId: string; name: string; role: Role; email: string; joinedAt: string; lastSignInAt: string | null };
 export type Invite = { id: string; email: string; role: Role; name: string; createdAt: string };
 export type CoopFarmer = {
@@ -57,6 +76,11 @@ export function coopError(message: string) {
   if (/only an owner/.test(message)) return 'Only an owner can change admins and owners.';
   if (/only an org admin/.test(message)) return 'Only an admin can do this.';
   if (/invalid email/.test(message)) return 'Check the email address.';
+  if (/bad_phone/.test(message)) return 'Use a Kenyan mobile number, like 0712 345 678.';
+  if (/name_length/.test(message)) return 'Names need 2 to 80 characters.';
+  if (/no_crops/.test(message)) return 'Choose at least one crop.';
+  if (/update_org_settings|set_my_display_name/.test(message) && /function|schema cache/.test(message))
+    return 'Settings need the latest database update (coop_settings.sql). Ask whoever runs the database to apply it.';
   return message;
 }
 
@@ -65,17 +89,29 @@ export function coopError(message: string) {
 /** The signed-in member's org. Claims any invite for their email first, so a new member lands in. */
 export async function loadOrg(client: SupabaseClient, userId: string): Promise<Org | null> {
   await client.rpc('claim_invites');
-  const { data, error } = await client
-    .from('org_members')
-    .select('org_id, role, display_name, created_at, orgs(name, join_code)')
-    .eq('user_id', userId)
-    .order('created_at')
-    .limit(1);
+  const query = (cols: string) =>
+    client.from('org_members').select(`org_id, role, display_name, created_at, orgs(${cols})`).eq('user_id', userId).order('created_at').limit(1);
+  // Before the coop_settings migration the newer columns are missing; fall back so sign-in still works.
+  let { data, error } = await query('name, join_code, kind, county, contact_phone, crops');
+  if (error && /column/.test(error.message)) ({ data, error } = await query('name, join_code, kind'));
   if (error) throw new Error(error.message);
-  const m = data?.[0];
+  const m = data?.[0] as { org_id: string; role: string; display_name: string; orgs: unknown } | undefined;
   if (!m) return null;
-  const o = Array.isArray(m.orgs) ? m.orgs[0] : m.orgs;
-  return { id: m.org_id, name: o?.name ?? 'Co-op', joinCode: o?.join_code ?? '', role: m.role as Role, myName: m.display_name, myId: userId };
+  const o = (Array.isArray(m.orgs) ? m.orgs[0] : m.orgs) as
+    | { name?: string; join_code?: string; kind?: OrgKind; county?: string | null; contact_phone?: string | null; crops?: Crop[] }
+    | null;
+  return {
+    id: m.org_id,
+    name: o?.name ?? 'Co-op',
+    joinCode: o?.join_code ?? '',
+    role: m.role as Role,
+    myName: m.display_name,
+    myId: userId,
+    kind: o?.kind ?? 'coop',
+    county: o?.county ?? null,
+    contactPhone: o?.contact_phone ?? null,
+    crops: o?.crops?.length ? o.crops.filter((c) => ALL_CROPS.includes(c)) : ALL_CROPS,
+  };
 }
 
 export async function loadTeam(client: SupabaseClient, org: Org): Promise<{ members: Member[]; invites: Invite[] }> {
@@ -125,7 +161,18 @@ export async function loadFarmers(client: SupabaseClient, org: Org): Promise<Coo
 
 const ago = (days: number) => new Date(Date.now() - days * 86400_000).toISOString();
 
-export const SAMPLE_ORG: Org = { id: 'org-sample', name: 'Njoro Growers Co-op', joinCode: 'NJR-4821', role: 'admin', myName: 'Wanjiru K.', myId: 'u-wanjiru' };
+export const SAMPLE_ORG: Org = {
+  id: 'org-sample',
+  name: 'Njoro Growers Co-op',
+  joinCode: 'NJR-4821',
+  role: 'admin',
+  myName: 'Wanjiru K.',
+  myId: 'u-wanjiru',
+  kind: 'coop',
+  county: 'Nakuru',
+  contactPhone: '+254712000111',
+  crops: ALL_CROPS,
+};
 
 export function sampleTeam(): { members: Member[]; invites: Invite[] } {
   return {

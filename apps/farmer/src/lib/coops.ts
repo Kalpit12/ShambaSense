@@ -6,12 +6,13 @@ import { supabase } from './auth';
 // farmer's agreement to share their farm and crop checks; leaving ends the co-op's access at once.
 // Both need a connection, since the co-op's access changes on the server.
 
-export type Coop = { id: string; name: string; joinedAt: string };
+/** contactPhone is the number the co-op set in the dashboard's Settings, if any (+2547...). */
+export type Coop = { id: string; name: string; joinedAt: string; contactPhone?: string | null };
 export type CoopError = 'not_found' | 'too_many' | 'staff' | 'offline' | 'unknown';
 
 // Preview mode: two made-up co-ops and their codes, kept for the session only.
 const PREVIEW_CODES: Record<string, Coop> = {
-  NJR4821: { id: 'coop-njoro', name: 'Njoro Growers Co-op', joinedAt: '' },
+  NJR4821: { id: 'coop-njoro', name: 'Njoro Growers Co-op', joinedAt: '', contactPhone: '+254712000111' },
   DEMO2026: { id: 'coop-demo', name: 'ShambaSense demo co-op', joinedAt: '' },
 };
 let previewJoined: Coop[] = [{ ...PREVIEW_CODES.NJR4821, joinedAt: new Date(Date.now() - 150 * 86400_000).toISOString() }];
@@ -37,7 +38,15 @@ export function useCoops(signedIn: boolean) {
     }
     if (!signedIn) return;
     const { data, error } = await supabase.rpc('my_coops');
-    if (!error) setCoops((data ?? []).map((c: { id: string; name: string; joined_at: string }) => ({ id: c.id, name: c.name, joinedAt: c.joined_at })));
+    if (!error)
+      setCoops(
+        (data ?? []).map((c: { id: string; name: string; joined_at: string; contact_phone?: string | null }) => ({
+          id: c.id,
+          name: c.name,
+          joinedAt: c.joined_at,
+          contactPhone: c.contact_phone ?? null,
+        })),
+      );
     setLoading(false);
   }, [signedIn]);
 

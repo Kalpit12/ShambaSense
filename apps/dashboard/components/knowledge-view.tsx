@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { causeById, CAUSES, CROP_NAME } from '@/lib/causes';
+import { causeById, CAUSES, causesFor, CROP_NAME } from '@/lib/causes';
+import { ALL_CROPS } from '@/lib/coop';
 import { ago, dateLabel } from '@/lib/format';
 import { canWrite, LANGUAGE_WORD, loadGuides, MAX_STEPS, remoteApi, sampleApi, sampleGuides, STATUS_WORD, type Draft, type Guide, type GuideApi, type GuideStatus, type Language } from '@/lib/guides';
 import { supabase } from '@/lib/remote';
@@ -99,7 +100,7 @@ export function KnowledgeView({ search }: { search: string }) {
             <p className="muted">Short guides farmers read on their phones, even without signal. A guide reaches farmers only after a second person on the team reviews it.</p>
           </div>
           {writer ? (
-            <button className="btn btn-primary" onClick={() => (pick(null), setCreating({ causeId: 'early_blight', language: 'en' }))}>
+            <button className="btn btn-primary" onClick={() => (pick(null), setCreating({ causeId: causesFor(org?.crops[0] ?? 'tomatoes')[0]?.id ?? 'early_blight', language: 'en' }))}>
               New guide
             </button>
           ) : null}
@@ -414,6 +415,8 @@ function GuideForm({
   onSave: (d: Draft, send: boolean) => Promise<void>;
   onDelete?: () => void;
 }) {
+  const { org } = useStore();
+  const orgCrops = org?.crops ?? ALL_CROPS;
   const [d, setD] = useState<Draft>(initial);
   const [busy, setBusy] = useState(false);
   const flags = safetyFlags([d.title, ...d.steps, d.warning].join(' '));
@@ -432,7 +435,7 @@ function GuideForm({
           <label className="field">
             <span className="field-label">Problem</span>
             <select value={d.causeId} onChange={(e) => set({ causeId: e.target.value })}>
-              {CAUSES.map((c) => (
+              {CAUSES.filter((c) => c.crop === 'any' || orgCrops.includes(c.crop) || c.also?.some((x) => orgCrops.includes(x))).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.en} ({cropWord(c.crop)})
                 </option>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/button';
@@ -77,6 +77,11 @@ export function CoopCard({ signedIn }: { signedIn: boolean }) {
             <View style={styles.flex}>
               <Text style={styles.name}>{c.name}</Text>
               {c.joinedAt ? <Text style={styles.meta}>{t('coop.joined', { date: formatDate(c.joinedAt, i18n.language) })}</Text> : null}
+              {c.contactPhone ? (
+                <Text style={styles.call} role="link" onPress={() => Linking.openURL(`tel:${c.contactPhone}`).catch(() => {})}>
+                  {t('coop.call', { phone: `0${c.contactPhone.slice(4, 7)} ${c.contactPhone.slice(7, 10)} ${c.contactPhone.slice(10)}` })}
+                </Text>
+              ) : null}
             </View>
             <Button variant="text" label={t('coop.leave')} onPress={() => (setError(null), setLeaving(c))} />
           </View>
@@ -159,6 +164,7 @@ const styles = StyleSheet.create({
   icon: { width: 40, height: 40, borderRadius: 20, backgroundColor: color.forest50, alignItems: 'center', justifyContent: 'center' },
   name: { ...type.bodyEmphasis, color: color.ink },
   meta: { ...type.meta, fontFamily: font.regular, color: color.stone600 },
+  call: { ...type.meta, fontFamily: font.semibold, color: color.forest900, textDecorationLine: 'underline', paddingVertical: space[2] },
   body: { ...type.body, color: color.stone600 },
   share: { flexDirection: 'row', alignItems: 'center', gap: space[3] },
 });

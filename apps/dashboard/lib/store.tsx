@@ -39,6 +39,8 @@ type Store = {
   reset: () => void;
   /** Reads the org again, after a rename, a new join code or setting one up. */
   reloadOrg: () => Promise<void>;
+  /** Shows saved settings at once; sample mode keeps them for this visit only. */
+  patchOrg: (p: Partial<Org>) => void;
 };
 
 const KEY = 'shambasense.dashboard.v1';
@@ -58,6 +60,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [session, setSession] = useState<Session | null>(null);
   const [org, setOrg] = useState<Org | null>(null);
+  const [sampleOrg, setSampleOrg] = useState<Org>(SAMPLE_ORG);
   const [orgFor, setOrgFor] = useState<string | null>(null);
   const [checking, setChecking] = useState(!!supabase);
   const [error, setError] = useState<string | null>(null);
@@ -151,6 +154,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         checking: checking || (!!session && orgFor !== session.user.id),
         error,
         reloadOrg,
+        patchOrg: (p) => setOrg((o) => (o ? { ...o, ...p } : o)),
         review: (id, r) => call('review_issue', { p_issue: id, p_kind: r.kind, p_cause_ids: r.causeIds, p_body: r.body, p_follow_up_days: r.followUpDays }),
         assignToMe: (id) => call('assign_issue_to_me', { p_issue: id }),
         setStatus: (id, status) => call('set_issue_status', { p_issue: id, p_status: status }),
@@ -160,10 +164,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       issues,
       mode: 'sample',
       session: null,
-      org: SAMPLE_ORG,
+      org: sampleOrg,
       checking: false,
       error: null,
       reloadOrg: async () => {},
+      patchOrg: (p) => setSampleOrg((o) => ({ ...o, ...p })),
       review: (id, r) =>
         change(id, (i) => {
           const at = new Date();
@@ -197,7 +202,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setIssues(sampleIssues());
       },
     };
-  }, [issues, change, session, org, orgFor, checking, error, call, refresh, reloadOrg]);
+  }, [issues, change, session, org, sampleOrg, orgFor, checking, error, call, refresh, reloadOrg]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
