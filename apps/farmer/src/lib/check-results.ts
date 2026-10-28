@@ -16,6 +16,7 @@ export const CAUSES = [
   'fall_armyworm', 'maize_streak', 'mln', 'nitrogen',
   'bean_rust', 'angular_leaf_spot', 'aphids',
   'black_rot',
+  'potato_blight', 'potato_wilt', 'diamondback',
 ] as const;
 export type CauseId = (typeof CAUSES)[number];
 
@@ -25,10 +26,11 @@ export const CAUSE_CROP: Record<CauseId, Crop | 'any'> = {
   fall_armyworm: 'maize', maize_streak: 'maize', mln: 'maize', nitrogen: 'any',
   bean_rust: 'beans', angular_leaf_spot: 'beans', aphids: 'any',
   black_rot: 'kale',
+  potato_blight: 'potatoes', potato_wilt: 'potatoes', diamondback: 'cabbage',
 };
 
 /** Crops the reviewed library covers. Everything else is `unsupported_crop` and can go to an agronomist. */
-export const SUPPORTED_CROPS: Crop[] = ['tomatoes', 'maize', 'beans', 'kale'];
+export const SUPPORTED_CROPS: Crop[] = ['tomatoes', 'maize', 'beans', 'kale', 'potatoes', 'cabbage'];
 
 export type CheckResult = {
   state: CheckState;
@@ -58,9 +60,15 @@ export function previewResult(crop: Crop, symptoms: Symptom[]): CheckResult {
     if (has('yellowing')) return one('nitrogen');
     return { ...base, state: 'needs_more_information', causes: [] };
   }
-  if (crop === 'beans' || crop === 'kale') {
+  if (crop === 'potatoes') {
     if (has('insects')) return one('aphids', 'more_likely');
-    if (crop === 'kale' && (has('yellowing') || has('spots'))) return one('black_rot');
+    if (has('spots') || has('rot')) return one('potato_blight');
+    return { ...base, state: 'needs_more_information', causes: [] };
+  }
+  if (crop === 'cabbage' && has('holes')) return one('diamondback', 'more_likely');
+  if (crop === 'beans' || crop === 'kale' || crop === 'cabbage') {
+    if (has('insects')) return one('aphids', 'more_likely');
+    if (crop !== 'beans' && (has('yellowing') || has('spots'))) return one('black_rot');
     if (crop === 'beans' && has('spots'))
       return { ...base, state: 'possible_match', causes: [{ id: 'bean_rust', likelihood: 'possible' }, { id: 'angular_leaf_spot', likelihood: 'possible' }] };
     return { ...base, state: 'needs_more_information', causes: [] };

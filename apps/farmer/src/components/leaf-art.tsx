@@ -13,6 +13,7 @@ export type LeafPattern =
   | 'fall_armyworm' | 'maize_streak' | 'mln' | 'nitrogen'
   | 'bean_rust' | 'angular_leaf_spot' | 'aphids'
   | 'black_rot'
+  | 'potato_blight' | 'potato_wilt' | 'diamondback'
   | 'chewed' | 'healthy';
 
 // Flat fills only: gradient ids clash when several drawings share a web page.
@@ -40,7 +41,7 @@ export function LeafArt({ pattern, size, style }: { pattern: LeafPattern; size?:
         <Ellipse cx="18" cy="16" rx="18" ry="9" fill="#2E5530" opacity={0.7} transform="rotate(-30 18 16)" />
         <Ellipse cx="88" cy="86" rx="16" ry="8" fill="#2A4E2C" opacity={0.7} transform="rotate(-35 88 86)" />
         <G transform="rotate(-12 50 50)">
-          <Path d={LEAF} fill={pattern === 'late_blight' ? '#5F7E3C' : pattern === 'mln' ? '#8FA548' : '#6E9E45'} />
+          <Path d={LEAF} fill={pattern === 'late_blight' || pattern === 'potato_blight' ? '#5F7E3C' : pattern === 'mln' ? '#8FA548' : pattern === 'potato_wilt' ? '#8AA35A' : '#6E9E45'} />
           <Path d="M50 6 C80 20 90 52 74 78 C66 90 56 95 50 96 L50 6Z" fill="#000000" opacity={0.08} />
           {pattern === 'chewed' || pattern === 'fall_armyworm' ? (
             <Path d="M74 78 C70 70 76 66 72 60 C78 58 80 52 84 50 L90 52 Z M26 78 C30 72 24 68 28 62 C22 60 18 52 14 50 L10 52 Z" fill={BG} />
@@ -108,7 +109,15 @@ export function LeafArt({ pattern, size, style }: { pattern: LeafPattern; size?:
                 </G>
               ))
             : null}
-          {pattern === 'late_blight' ? (
+          {pattern === 'potato_wilt' ? (
+            <Path d="M50 6 C80 20 90 52 74 78 C66 90 56 95 50 96 C58 80 66 60 64 40 C62 26 56 14 50 6Z" fill="#B5B060" opacity={0.55} />
+          ) : null}
+          {pattern === 'diamondback'
+            ? DOTS.filter((_, i) => i % 3 !== 1).map(([x, y]) => (
+                <Ellipse key={`${x}-${y}`} cx={x} cy={y} rx={2.4} ry={1.7} fill="#DDE6BC" opacity={0.85} />
+              ))
+            : null}
+          {pattern === 'late_blight' || pattern === 'potato_blight' ? (
             <>
               <Path d="M60 20 C76 30 82 50 74 70 C66 66 58 56 56 44 C54 34 56 26 60 20Z" fill="#3A3324" opacity={0.85} />
               <Path d="M30 64 C38 60 46 66 46 76 C46 86 38 90 32 84 C28 78 26 70 30 64Z" fill="#3A3324" opacity={0.8} />

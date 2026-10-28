@@ -18,6 +18,7 @@ const LIBRARY = 'library-2026.10';
 // app's English text so the model and the result screen describe the same thing. Keep in step with
 // CAUSES in apps/farmer/src/lib/check-results.ts.
 const APHIDS = 'Aphids (pest): groups of small green or black insects under the leaves and on new shoots; curled, sticky leaves; ants walking up and down the plants.';
+const BLACK_ROT = 'Black rot (Xanthomonas campestris): yellow V-shaped patches starting at the leaf edge, pointing inward; black veins inside the yellow patches; lower leaves wilt and fall.';
 const LIBRARY_CAUSES: Record<string, Record<string, string>> = {
   tomatoes: {
     early_blight: 'Early blight (Alternaria solani): brown spots on the older, lower leaves; rings inside the spots like a target; a yellow edge around some spots.',
@@ -36,8 +37,15 @@ const LIBRARY_CAUSES: Record<string, Record<string, string>> = {
     angular_leaf_spot: 'Angular leaf spot (Pseudocercospora griseola): grey or brown spots with straight edges boxed in by the veins; spots join and the leaf yellows; dark round spots with red-brown edges on pods.',
     aphids: APHIDS,
   },
-  kale: {
-    black_rot: 'Black rot (Xanthomonas campestris): yellow V-shaped patches starting at the leaf edge, pointing inward; black veins inside the yellow patches; lower leaves wilt and fall.',
+  kale: { black_rot: BLACK_ROT, aphids: APHIDS },
+  cabbage: {
+    diamondback: 'Diamondback moth, Plutella xylostella (pest): small holes and see-through windows in the leaves; small green caterpillars that wriggle fast and drop on a silk thread; tiny grey moths.',
+    black_rot: BLACK_ROT,
+    aphids: APHIDS,
+  },
+  potatoes: {
+    potato_blight: 'Potato late blight (Phytophthora infestans): dark brown patches that look wet, often at leaf tips and edges; white mould under the leaves in damp weather; brown rot on stems and tubers.',
+    potato_wilt: 'Bacterial wilt of potato (Ralstonia solanacearum): plants wilt in the heat of the day while the leaves stay green, even in wet soil; a cut tuber shows a brown ring that oozes white drops.',
     aphids: APHIDS,
   },
 };
@@ -155,7 +163,7 @@ function instructions(crop: string, causes: Record<string, string>) {
     'Choose the state:',
     '- possible_match: the photo clearly shows the signs of one or two causes on the list. Use likelihood "more_likely" only for one cause that fits much better than the rest; otherwise "possible". List the best fit first. At most two causes.',
     '- needs_more_information: the photo is blurry, too dark, too far away, not this crop, shows a healthy plant, or the signs do not clearly match any cause on the list. Give no causes.',
-    `- expert_review_required: the plant shows serious damage that is not on the list (for example the whole plant wilting while leaves stay green, mosaic or curled leaves from a virus, or rotting stems), or it could spread fast and you cannot tell which cause it is. Give no causes.`,
+    `- expert_review_required: the plant shows serious damage that no cause on the list explains (for example wilting, mosaic or curled leaves from a virus, or rotting stems), or it could spread fast and you cannot tell which cause it is. Give no causes.`,
     'Be careful: a wrong cause sends the farmer the wrong advice. When unsure, prefer needs_more_information.',
     'The signs the farmer ticked are hints only. Trust the photo.',
     'observed: up to three short plain phrases describing what is visible in the photo, in English.',
