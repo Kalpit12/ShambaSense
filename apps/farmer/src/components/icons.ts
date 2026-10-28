@@ -39,3 +39,7 @@ export { TrendDownIcon } from 'phosphor-react-native/src/icons/TrendDown';
 export { EqualsIcon } from 'phosphor-react-native/src/icons/Equals';
 export { CheckSquareIcon } from 'phosphor-react-native/src/icons/CheckSquare';
 export { CalendarCheckIcon } from 'phosphor-react-native/src/icons/CalendarCheck';
+export { SunIcon } from 'phosphor-react-native/src/icons/Sun';
+export { CloudIcon } from 'phosphor-react-native/src/icons/Cloud';
+export { CloudRainIcon } from 'phosphor-react-native/src/icons/CloudRain';
+export { CloudLightningIcon } from 'phosphor-react-native/src/icons/CloudLightning';

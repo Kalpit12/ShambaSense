@@ -59,11 +59,19 @@ export function shortDate(iso: string, lang: string) {
   return formatDate(iso, lang).split(' ').slice(0, 2).join(' ');
 }
 
+const WEEKDAYS = {
+  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  sw: ['Jumapili', 'Jumatatu', 'Jumanne', 'Jumatano', 'Alhamisi', 'Ijumaa', 'Jumamosi'],
+};
+
+/** "Thu" / "Alhamisi". */
+export function weekday(iso: string, lang: string) {
+  return (lang === 'sw' ? WEEKDAYS.sw : WEEKDAYS.en)[parseIso(iso).getDay()];
+}
+
 /** "Tue 27 Oct" / "Jumanne 27 Okt" for the Home header. */
 export function todayLabel(lang: string) {
-  const days = lang === 'sw'
-    ? ['Jumapili', 'Jumatatu', 'Jumanne', 'Jumatano', 'Alhamisi', 'Ijumaa', 'Jumamosi']
-    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const days = lang === 'sw' ? WEEKDAYS.sw : WEEKDAYS.en;
   const d = new Date();
   const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   return `${days[d.getDay()]} ${shortDate(iso, lang)}`;

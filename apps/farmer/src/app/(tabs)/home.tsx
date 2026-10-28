@@ -6,11 +6,12 @@ import { useTranslation } from 'react-i18next';
 
 import { AreaChart, LegendDot, MeterBar, Rings } from '@/components/charts';
 import { DarkHero, HeroBody } from '@/components/hero';
-import { BookOpenTextIcon, CalendarBlankIcon, CalendarCheckIcon, CameraIcon, CheckSquareIcon, CaretRightIcon, CloudSunIcon, NotebookIcon, PlantIcon } from '@/components/icons';
+import { BookOpenTextIcon, CalendarBlankIcon, CalendarCheckIcon, CameraIcon, CheckSquareIcon, CaretRightIcon, NotebookIcon, PlantIcon } from '@/components/icons';
 import { Enter, PressableScale } from '@/components/motion';
 import { CheckRow, RecordRow } from '@/components/record-row';
 import { Card, SectionTitle } from '@/components/screen';
 import { SyncChip } from '@/components/sync-chip';
+import { WeatherCard } from '@/components/weather-card';
 import { useAuth } from '@/lib/auth';
 import { TYPICAL_DAYS } from '@/lib/crops';
 import { parseIso, shiftDays, shortDate, todayLabel, weeksSince } from '@/lib/dates';
@@ -122,7 +123,7 @@ export default function HomeScreen() {
   if (!records.some((r) => r.occurredOn === today))
     tasks.push({ key: 'record', title: t('home.taskRecord'), hint: t('home.taskRecordHint'), Icon: NotebookIcon, href: '/journal?add=1' });
 
-  const place = farm?.ward || farm?.county || user?.county;
+  const county = farm?.county || user?.county;
   const net = money.totalSold - money.totalSpent;
   const plotRows = [...money.byPlot.entries()]
     .map(([id, v]) => ({ id, name: id ? (plots.find((p) => p.id === id)?.name ?? '') : t('home.wholeFarm'), ...v }))
@@ -145,14 +146,6 @@ export default function HomeScreen() {
               {user?.name ? t('home.greeting', { name: user.name }) : t('home.greetingNoName')}
             </Text>
             {farm ? <Text style={styles.farm}>{[farm.farmName, farm.ward, farm.county].filter(Boolean).join(' · ')}</Text> : null}
-            {place ? (
-              <View style={styles.weather}>
-                <CloudSunIcon size={18} color={color.onForest} />
-                <Text style={styles.weatherText} numberOfLines={2}>
-                  {t('home.weather', { place })}
-                </Text>
-              </View>
-            ) : null}
           </Enter>
 
           <Enter step={1} style={styles.panel}>
@@ -222,6 +215,12 @@ export default function HomeScreen() {
                   </PressableScale>
                 ))}
               </Card>
+            </Enter>
+          ) : null}
+
+          {county ? (
+            <Enter step={2}>
+              <WeatherCard county={county} crops={[...new Set(plots.map((p) => p.crop))]} />
             </Enter>
           ) : null}
 
@@ -372,18 +371,6 @@ const styles = StyleSheet.create({
   date: { ...type.meta, color: onForestMuted },
   greeting: { ...type.display, fontSize: 30, lineHeight: 36, color: color.onForest, marginTop: space[2] },
   farm: { ...type.body, color: onForestMuted, marginTop: 2 },
-  weather: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space[2],
-    alignSelf: 'flex-start',
-    marginTop: space[3],
-    paddingHorizontal: space[3],
-    paddingVertical: space[2],
-    borderRadius: radius.full,
-    backgroundColor: 'rgba(244,241,230,0.08)',
-  },
-  weatherText: { ...type.meta, fontFamily: font.regular, color: onForestMuted, flexShrink: 1 },
   panel: {
     marginTop: space[2],
     padding: space[4],

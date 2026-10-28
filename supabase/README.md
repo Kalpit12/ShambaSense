@@ -78,3 +78,10 @@ Both apps send crashes and failed syncs to `log_app_error`, which trims them and
 hour per user. Nobody reads the table from the apps; look in Table Editor → `app_errors`, or:
 `select created_at, app, platform, message, context from app_errors order by created_at desc limit 50;`
 Rows older than 90 days are deleted each night.
+
+## Weather (`functions/weather`)
+
+The Home screen shows a 3-day forecast for the farm's county. `weather` takes `{ county }`, looks up the
+county headquarters, and asks MET Norway's free Locationforecast API (CC BY 4.0, commercial use allowed,
+credited on the card). Each county is cached for an hour per function instance, as MET asks. No secrets,
+no tables; `verify_jwt` is on. The app keeps the last forecast on the phone and refreshes it every 3 hours.
