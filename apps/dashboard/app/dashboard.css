@@ -240,3 +240,9 @@
 @media (max-width: 767px) {
   .c-seen { display: none; }
 }
+
+/* Reports */
+.report-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-right: 12px; border-bottom: 1px solid var(--stone-200); }
+.panel-head h2 { border-bottom: 0; }
+.panel-note { margin: 0; padding: 10px 12px; border-top: 1px solid var(--stone-200); }
