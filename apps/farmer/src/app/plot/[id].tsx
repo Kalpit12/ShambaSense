@@ -20,6 +20,8 @@ import { formatKes } from '@/lib/format';
 import { PLOT_COLORS, plotMoney, seasonOf } from '@/lib/plot-stats';
 import { color, font, radius, space, type } from '@/theme/tokens';
 
+const PLANNED_DAYS = 92;
+
 type Entry = { day: string; key: string; record?: JournalRecord; check?: CropCheck };
 
 /** One plot: its season, money and everything recorded on it, with shortcuts to add more. */
@@ -97,7 +99,9 @@ export default function PlotScreen() {
                   </View>
                 </>
               ) : (
-                plot.plantedOn ? (
+                plot.plantedOn && plot.plantedOn > today ? (
+                  <Text style={styles.seasonSmall}>{t('shamba.plannedFor', { date: formatDate(plot.plantedOn, i18n.language) })}</Text>
+                ) : plot.plantedOn ? (
                   <Text style={styles.seasonSmall}>{t('shamba.perennial')}</Text>
                 ) : (
                   <PressableScale onPress={() => setEditingDate(true)} accessibilityRole="button" style={styles.heroAdd}>
@@ -227,8 +231,9 @@ function PlantedSheet({ plot, open, onClose }: { plot: Plot; open: boolean; onCl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const plantedOn = notPlanted ? null : parseDmy(date);
-  const error = tried && !notPlanted && !plantedOn ? t('shamba.plantedOnInvalid') : null;
+  // A planned date up to 3 months ahead is fine: the calendar and its reminders start from it.
+  const plantedOn = notPlanted ? null : parseDmy(date, PLANNED_DAYS);
+  const error = tried && !notPlanted && !plantedOn ? (parseDmy(date, 36500) ? t('shamba.plantedOnTooFar') : t('shamba.plantedOnInvalid')) : null;
   const save = () => {
     setTried(true);
     if (!notPlanted && !plantedOn) return;

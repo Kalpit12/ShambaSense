@@ -82,7 +82,7 @@ export default function HomeScreen() {
 
   // Season rings: planted plots with a typical season length, furthest along first, at most three.
   const seasons = plots
-    .filter((p): p is Plot & { plantedOn: string } => !!p.plantedOn && !!TYPICAL_DAYS[p.crop])
+    .filter((p): p is Plot & { plantedOn: string } => !!p.plantedOn && p.plantedOn <= today && !!TYPICAL_DAYS[p.crop])
     .map((p) => {
       const days = (parseIso(today).getTime() - parseIso(p.plantedOn).getTime()) / 86400000;
       const typical = TYPICAL_DAYS[p.crop]!;

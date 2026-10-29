@@ -27,13 +27,18 @@ export function weeksSince(iso: string) {
   return Math.max(0, Math.floor((startOfToday().getTime() - parseIso(iso).getTime()) / (7 * 86400000)));
 }
 
-/** Accepts DD/MM/YYYY (what people type in Kenya) and returns YYYY-MM-DD, or null. */
-export function parseDmy(input: string): string | null {
+/**
+ * Accepts DD/MM/YYYY (what people type in Kenya) and returns YYYY-MM-DD, or null. Dates after today
+ * are refused unless futureDays allows them (a planting date a farmer is planning).
+ */
+export function parseDmy(input: string, futureDays = 0): string | null {
   const m = input.trim().match(/^(\d{1,2})[/.\- ](\d{1,2})[/.\- ](\d{4})$/);
   if (!m) return null;
   const [d, mo, y] = [Number(m[1]), Number(m[2]), Number(m[3])];
   const date = new Date(y, mo - 1, d);
-  if (date.getMonth() !== mo - 1 || date > new Date() || y < 2000) return null;
+  const latest = startOfToday();
+  latest.setDate(latest.getDate() + futureDays + 1);
+  if (date.getMonth() !== mo - 1 || date >= latest || y < 2000) return null;
   return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
 

@@ -6,7 +6,7 @@ import type { FarmSize } from './onboarding';
 /** How far a plot is into a typical season. Null when not planted or the crop has no season. */
 export function seasonOf(plot: Plot, today: string) {
   const typical = TYPICAL_DAYS[plot.crop];
-  if (!plot.plantedOn || !typical) return null;
+  if (!plot.plantedOn || !typical || plot.plantedOn > today) return null;
   const days = (parseIso(today).getTime() - parseIso(plot.plantedOn).getTime()) / 86400000;
   return {
     value: Math.min(1, Math.max(0, days / typical)),

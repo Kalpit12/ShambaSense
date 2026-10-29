@@ -15,7 +15,7 @@ import { KIND_ICON } from '@/components/record-row';
 import { Card, SectionTitle } from '@/components/screen';
 import { Sheet } from '@/components/sheet';
 import { useAuth } from '@/lib/auth';
-import { parseDmy, relativeDay } from '@/lib/dates';
+import { formatDate, parseDmy, relativeDay } from '@/lib/dates';
 import { todayIso, useFarm, type Plot } from '@/lib/farm-store';
 import { formatKes, formatQty, parseAmount } from '@/lib/format';
 import { CROPS, expectedPlots, type Crop } from '@/lib/onboarding';
@@ -202,7 +202,13 @@ function PlotCard({ plot, index, onPress }: { plot: Plot; index: number; onPress
             </View>
           </View>
         ) : (
-          <Text style={styles.muted}>{plot.plantedOn ? t('shamba.perennial') : t('shamba.noSeason')}</Text>
+          <Text style={styles.muted}>
+            {plot.plantedOn && plot.plantedOn > todayIso()
+              ? t('shamba.plannedFor', { date: formatDate(plot.plantedOn, i18n.language) })
+              : plot.plantedOn
+                ? t('shamba.perennial')
+                : t('shamba.noSeason')}
+          </Text>
         )}
 
         <View style={styles.plotFoot}>
@@ -249,9 +255,9 @@ function AddPlotSheet({ open, onClose, crops }: { open: boolean; onClose: () => 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const plantedOn = notPlanted || !date.trim() ? null : parseDmy(date);
+  const plantedOn = notPlanted || !date.trim() ? null : parseDmy(date, 92);
   const nameError = tried && !name.trim() ? t('shamba.plotNameRequired') : null;
-  const dateError = tried && !notPlanted && date.trim() && !plantedOn ? t('shamba.plantedOnInvalid') : null;
+  const dateError = tried && !notPlanted && date.trim() && !plantedOn ? (parseDmy(date, 36500) ? t('shamba.plantedOnTooFar') : t('shamba.plantedOnInvalid')) : null;
 
   const save = () => {
     setTried(true);
