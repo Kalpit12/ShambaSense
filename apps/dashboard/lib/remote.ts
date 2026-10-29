@@ -21,7 +21,20 @@ export const DEMO_PASSWORD = 'shamba-demo-123456';
 export const DEMO_EMAIL = 'agronomist.demo@example.com';
 export const DEMO_ADMIN_EMAIL = 'admin.demo@example.com';
 
-const PHOTO_URL_SECONDS = 600;
+const PHOTO_URL_SECONDS = 3600;
+
+// Signed photo links are reused until 5 minutes before they expire. A new link each poll would make
+// the browser download every photo again every 20 seconds.
+const signedCache = new Map<string, { url: string; until: number }>();
+async function signPhotos(client: SupabaseClient, paths: string[]) {
+  const now = Date.now();
+  const missing = Array.from(new Set(paths.filter((p) => (signedCache.get(p)?.until ?? 0) < now)));
+  if (missing.length) {
+    const { data } = await client.storage.from('check-photos').createSignedUrls(missing, PHOTO_URL_SECONDS);
+    for (const s of data ?? []) if (s.path && s.signedUrl) signedCache.set(s.path, { url: s.signedUrl, until: now + (PHOTO_URL_SECONDS - 300) * 1000 });
+  }
+  return new Map(paths.flatMap((p) => (signedCache.has(p) ? [[p, signedCache.get(p)!.url] as const] : [])));
+}
 
 export async function loadIssues(client: SupabaseClient): Promise<Issue[]> {
   const { data: rows, error } = await client
@@ -48,9 +61,7 @@ export async function loadIssues(client: SupabaseClient): Promise<Issue[]> {
   const followIds = (events.data ?? []).map((e) => e.check_id).filter(Boolean) as string[];
   const followMedia = followIds.length ? await client.from('media').select('check_id, storage_path').in('check_id', followIds) : { data: [] };
   const allMedia = [...(media.data ?? []), ...(followMedia.data ?? [])];
-  const paths = allMedia.map((m) => m.storage_path);
-  const signed = paths.length ? await client.storage.from('check-photos').createSignedUrls(paths, PHOTO_URL_SECONDS) : { data: [] };
-  const urlFor = new Map((signed.data ?? []).map((s) => [s.path, s.signedUrl]));
+  const urlFor = await signPhotos(client, allMedia.map((m) => m.storage_path));
 
   return issues.map((i): Issue => {
     const farm = one(i.farms);

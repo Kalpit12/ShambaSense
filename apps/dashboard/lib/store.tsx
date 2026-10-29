@@ -106,12 +106,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [session, reloadOrg]);
 
-  // Signed in: load, then look for new cases every 20 s. Rows never animate in (design.md §5.6).
+  // Signed in: load, then look for new cases every 20 s while the tab is in view, and at once when
+  // someone comes back to it. Rows never animate in (design.md §5.6).
   useEffect(() => {
     if (!session) return;
     refresh();
-    const id = setInterval(refresh, 20000);
-    return () => clearInterval(id);
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') refresh();
+    }, 20000);
+    const back = () => document.visibilityState === 'visible' && refresh();
+    document.addEventListener('visibilitychange', back);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', back);
+    };
   }, [session, refresh]);
 
   // Runs a database function, then reloads. Errors show in the page instead of failing silently.

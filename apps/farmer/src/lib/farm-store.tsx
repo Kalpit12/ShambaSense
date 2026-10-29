@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 
 import { previewResult, type CheckResult } from './check-results';
 
@@ -230,10 +231,18 @@ export function FarmStoreProvider({ owner, userId, children }: { owner: string; 
       setProgress({ done: 0, total: queue.length });
       for (let i = 0; i < queue.length; i++) {
         const item = queue[i];
-        await sendRow(client, userId, farmId, item);
-        if (item.table === 'checks') await askAgronomistRemote(client, item.row.id);
-        if (item.table === 'checks') await diagnoseRemote(client, item.row.id);
-        if (item.table === 'followUps') await sendFollowUpRemote(client, item.row.id);
+        try {
+          await sendRow(client, userId, farmId, item);
+          if (item.table === 'checks') await askAgronomistRemote(client, item.row.id);
+          if (item.table === 'checks') await diagnoseRemote(client, item.row.id);
+          if (item.table === 'followUps') await sendFollowUpRemote(client, item.row.id);
+        } catch (e) {
+          // No signal: stop and try the whole queue later. Anything else is this row's problem, so it
+          // stays queued and is logged, and the rows behind it still go.
+          if (isNetworkError(e)) throw e;
+          reportError(e, { kind: 'sync_row', table: item.table, id: item.row.id });
+          continue;
+        }
         const id = item.row.id;
         update((cur) => ({
           ...cur,
@@ -282,12 +291,17 @@ export function FarmStoreProvider({ owner, userId, children }: { owner: string; 
     }
   };
 
-  // Connected mode: send what is waiting and look for answers every 30 s while the app is open.
+  // Connected mode: send what is waiting and look for answers every 30 s while the app is on screen,
+  // and at once when the farmer comes back to it. Nothing runs in the background, to save data.
   useEffect(() => {
     if (isPreview || !loaded || !userId) return;
     sendNow();
-    const id = setInterval(sendNow, 30000);
-    return () => clearInterval(id);
+    const id = setInterval(() => AppState.currentState === 'active' && sendNow(), 30000);
+    const sub = AppState.addEventListener('change', (s) => s === 'active' && sendNow());
+    return () => {
+      clearInterval(id);
+      sub.remove();
+    };
   }, [loaded, userId, sendNow]);
 
   // The worker answers each sent check a moment later, also for checks left 'checking' when the app closed.
@@ -420,4 +434,10 @@ export function uid() {
 export function todayIso() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Lost signal or a timeout, as opposed to the server refusing one row. */
+function isNetworkError(e: unknown) {
+  const m = e instanceof Error ? e.message : String(e);
+  return /network|fetch|timed? ?out|abort|offline|connection/i.test(m);
 }

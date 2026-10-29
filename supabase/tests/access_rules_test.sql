@@ -429,5 +429,16 @@ exception when insufficient_privilege then raise notice 'ok: only members have a
 end $$;
 reset role;
 
+-- Demo sign-up closes once real SMS sign-in is on.
+update public.feature_flags set enabled = true where key = 'sms_auth';
+do $$ begin
+  perform public.demo_sign_up('+254700000777', 'Squatter', 'Nakuru', 'sw');
+  raise exception 'FAILED: demo account made while SMS is on';
+exception when raise_exception then
+  if sqlerrm = 'FAILED: demo account made while SMS is on' then raise; end if;
+  raise notice 'ok: no new demo accounts once SMS sign-in is on';
+end $$;
+update public.feature_flags set enabled = false where key = 'sms_auth';
+
 -- Every public table has RLS on.
 select pg_temp.check(not exists (select 1 from pg_tables where schemaname = 'public' and not rowsecurity), 'RLS is on for every table');
