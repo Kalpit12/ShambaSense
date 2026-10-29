@@ -15,10 +15,12 @@ import { Button } from '@/components/button';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { installErrorReporting, reportError } from '@/lib/errors';
 import { FarmStoreProvider } from '@/lib/farm-store';
+import { installUpdateChecks } from '@/lib/updates';
 import { color, font, space, type } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
 installErrorReporting();
+installUpdateChecks();
 
 /** A screen crashed: tell the team, and give the farmer a way back without losing saved work. */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {

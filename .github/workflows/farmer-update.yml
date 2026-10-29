@@ -1,0 +1,45 @@
+# Sends farmer app fixes to installed Android phones over the air (EAS Update, Expo's free plan).
+# Runs on every push to main that changes the farmer app, or by hand from Actions → "Farmer app update".
+# Phones download the fix in the background and use it the next time the app starts.
+#
+# An update only reaches APKs with the same native code (runtimeVersion "fingerprint" in app.json).
+# When a change needs new native code (a new Expo package, an icon, app.json native settings),
+# phones keep their current version until someone installs a new APK from the "Android APK" workflow.
+#
+# Needs the EXPO_TOKEN repository secret, the same one the APK workflow uses.
+name: Farmer app update
+
+on:
+  push:
+    branches: [main]
+    paths: ['apps/farmer/**']
+  workflow_dispatch:
+
+concurrency:
+  group: farmer-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/farmer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/farmer/package-lock.json
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: npm ci
+      - run: npx tsc --noEmit
+      # The same settings the APK was built with, read from eas.json so the two never drift apart.
+      - run: node -e "const e=require('./eas.json').build.preview.env; for (const [k,v] of Object.entries(e)) if (k.startsWith('EXPO_PUBLIC_')) console.log(k+'='+v)" >> "$GITHUB_ENV"
+      - run: eas update --channel preview --platform android --message "$MESSAGE" --non-interactive
+        env:
+          MESSAGE: ${{ github.event.head_commit.message || 'Manual update' }}

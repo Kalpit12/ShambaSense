@@ -160,3 +160,14 @@ plan covers it. Two ways to start a build:
 
 Expo keeps the signing key and raises the version code on every build, so a new APK installs over the old
 one and keeps the farmer signed in. The download link shows on expo.dev under the project's Builds.
+
+## Fixes over the air
+
+Installed APKs get JavaScript fixes without a reinstall, through EAS Update on the `preview` channel
+(free plan, up to 1,000 phones a month). The *Farmer app update* workflow publishes one on every push to
+`main` that touches `apps/farmer`. The app looks for an update each time it starts and after a break of
+30 minutes or more, downloads it in the background and restarts into it (`src/lib/updates.ts`).
+
+`runtimeVersion` uses the `fingerprint` policy, so an update only goes to APKs built from the same native
+code. Adding an Expo package or changing native settings in `app.json` needs a new APK from the
+*Android APK* workflow; until it is installed, those phones simply keep the version they have.
