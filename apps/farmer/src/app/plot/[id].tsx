@@ -1,18 +1,21 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/button';
 import { CalendarCard } from '@/components/calendar-card';
+import { Checkbox, FieldLabel, FieldMessage, TextField } from '@/components/fields';
 import { LegendDot, MeterBar, Rings } from '@/components/charts';
 import { DarkHero, GlassPanel, HeroBody, onForestMuted } from '@/components/hero';
 import { CameraIcon, CaretLeftIcon, NotebookIcon } from '@/components/icons';
 import { Enter, PressableScale } from '@/components/motion';
 import { CheckRow, RecordRow } from '@/components/record-row';
 import { Card, SectionTitle } from '@/components/screen';
-import { formatDate, localDay } from '@/lib/dates';
-import { todayIso, useFarm, type CropCheck, type JournalRecord } from '@/lib/farm-store';
+import { Sheet } from '@/components/sheet';
+import { formatDate, localDay, parseDmy } from '@/lib/dates';
+import { todayIso, useFarm, type CropCheck, type JournalRecord, type Plot } from '@/lib/farm-store';
 import { formatKes } from '@/lib/format';
 import { PLOT_COLORS, plotMoney, seasonOf } from '@/lib/plot-stats';
 import { color, font, radius, space, type } from '@/theme/tokens';
@@ -25,6 +28,7 @@ export default function PlotScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { plots, records, checks } = useFarm();
+  const [editingDate, setEditingDate] = useState(false);
   const index = plots.findIndex((p) => p.id === id);
   const plot = plots[index];
   const today = todayIso();
@@ -93,7 +97,14 @@ export default function PlotScreen() {
                   </View>
                 </>
               ) : (
-                <Text style={styles.seasonSmall}>{plot.plantedOn ? t('shamba.perennial') : t('shamba.noSeason')}</Text>
+                plot.plantedOn ? (
+                  <Text style={styles.seasonSmall}>{t('shamba.perennial')}</Text>
+                ) : (
+                  <PressableScale onPress={() => setEditingDate(true)} accessibilityRole="button" style={styles.heroAdd}>
+                    <Text style={styles.seasonSmall}>{t('shamba.noSeason')}</Text>
+                    <Text style={styles.heroAddText}>{t('shamba.setPlanted')}</Text>
+                  </PressableScale>
+                )
               )}
             </GlassPanel>
           </Enter>
@@ -120,14 +131,20 @@ export default function PlotScreen() {
           </Enter>
 
           <Enter step={2}>
-            <CalendarCard plot={plot} />
+            <CalendarCard plot={plot} onSetDate={() => setEditingDate(true)} />
           </Enter>
 
           <Enter step={2}>
             <SectionTitle>{t('shamba.details')}</SectionTitle>
             <Card style={styles.details}>
               <Detail label={t('shamba.cropLabel')} value={t(`onboarding.crops.${plot.crop}`)} />
-              <Detail label={t('shamba.plantedLabel')} value={plot.plantedOn ? formatDate(plot.plantedOn, i18n.language) : t('shamba.notPlanted')} />
+              <PressableScale onPress={() => setEditingDate(true)} accessibilityRole="button" accessibilityHint={t('shamba.changePlanted')}>
+                <Detail
+                  label={t('shamba.plantedLabel')}
+                  value={plot.plantedOn ? formatDate(plot.plantedOn, i18n.language) : t('shamba.notPlanted')}
+                  action={plot.plantedOn ? t('shamba.changePlanted') : t('shamba.setPlanted')}
+                />
+              </PressableScale>
               <Detail label={t('shamba.sizeLabel')} value={plot.areaAcres != null ? t('shamba.acres', { count: plot.areaAcres }) : t('shamba.sizeMissing')} />
             </Card>
           </Enter>
@@ -176,16 +193,77 @@ export default function PlotScreen() {
           </Enter>
         </HeroBody>
       </ScrollView>
+      <PlantedSheet plot={plot} open={editingDate} onClose={() => setEditingDate(false)} />
     </View>
   );
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
+function Detail({ label, value, action }: { label: string; value: string; action?: string }) {
   return (
     <View style={styles.detail}>
       <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
+      <View style={styles.detailRight}>
+        <Text style={styles.detailValue}>{value}</Text>
+        {action ? <Text style={styles.detailAction}>{action}</Text> : null}
+      </View>
     </View>
+  );
+}
+
+/** Sets, changes or clears the planting date of a plot saved without one. */
+function PlantedSheet({ plot, open, onClose }: { plot: Plot; open: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
+  const { updatePlot } = useFarm();
+  const [date, setDate] = useState('');
+  const [notPlanted, setNotPlanted] = useState(false);
+  const [tried, setTried] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const p = plot.plantedOn;
+    setDate(p ? `${p.slice(8, 10)}/${p.slice(5, 7)}/${p.slice(0, 4)}` : '');
+    setNotPlanted(false);
+    setTried(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const plantedOn = notPlanted ? null : parseDmy(date);
+  const error = tried && !notPlanted && !plantedOn ? t('shamba.plantedOnInvalid') : null;
+  const save = () => {
+    setTried(true);
+    if (!notPlanted && !plantedOn) return;
+    updatePlot(plot.id, { plantedOn });
+    onClose();
+  };
+
+  return (
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title={t('shamba.plantedOn')}
+      footer={
+        <>
+          <Button label={t('shamba.savePlanted')} onPress={save} />
+          <Button variant="text" label={t('shamba.cancel')} onPress={onClose} />
+        </>
+      }>
+      <FieldLabel>{t('shamba.plantedOn')}</FieldLabel>
+      {!notPlanted ? (
+        <TextField
+          value={date}
+          onChangeText={setDate}
+          placeholder={t('shamba.plantedOnPlaceholder')}
+          keyboardType="numbers-and-punctuation"
+          invalid={!!error}
+          accessibilityLabel={t('shamba.plantedOn')}
+          maxLength={10}
+        />
+      ) : null}
+      <FieldMessage error={error} />
+      <Checkbox checked={notPlanted} onChange={setNotPlanted}>
+        <Text style={styles.checkLabel}>{t('shamba.notPlantedYet')}</Text>
+      </Checkbox>
+    </Sheet>
   );
 }
 
@@ -224,7 +302,12 @@ const styles = StyleSheet.create({
   details: { paddingVertical: space[1] },
   detail: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: space[3], gap: space[3] },
   detailLabel: { ...type.body, color: color.stone600 },
-  detailValue: { ...type.body, fontFamily: font.medium, color: color.ink, flexShrink: 1, textAlign: 'right' },
+  detailRight: { alignItems: 'flex-end', flexShrink: 1 },
+  detailValue: { ...type.body, fontFamily: font.medium, color: color.ink, textAlign: 'right' },
+  detailAction: { ...type.meta, fontFamily: font.semibold, color: color.forest900, textDecorationLine: 'underline' },
+  heroAdd: { gap: space[1] },
+  heroAddText: { ...type.meta, fontFamily: font.semibold, color: color.lime, textDecorationLine: 'underline' },
+  checkLabel: { ...type.body, color: color.ink },
   money: { gap: space[3] },
   net: { fontFamily: font.semibold, fontSize: 26, lineHeight: 32, color: color.ink },
   netUp: { color: color.forest900 },

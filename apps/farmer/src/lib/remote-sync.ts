@@ -24,9 +24,10 @@ export async function farmIdFor(client: SupabaseClient, userId: string): Promise
 export async function sendRow(client: SupabaseClient, userId: string, farmId: string, item: Row): Promise<void> {
   if (item.table === 'plots') {
     const p = item.row;
-    await must(client.from('plots').upsert({ id: p.id, farm_id: farmId, name: p.name, area: p.areaAcres, area_unit: 'acres' }, ignoreDupes));
+    // Plots can be edited later (a planting date added), so these two overwrite instead of skipping.
+    await must(client.from('plots').upsert({ id: p.id, farm_id: farmId, name: p.name, area: p.areaAcres, area_unit: 'acres' }, { onConflict: 'id' }));
     // One crop cycle per plot for now, sharing the plot's id.
-    await must(client.from('crop_cycles').upsert({ id: p.id, plot_id: p.id, crop: p.crop, planted_on: p.plantedOn }, ignoreDupes));
+    await must(client.from('crop_cycles').upsert({ id: p.id, plot_id: p.id, crop: p.crop, planted_on: p.plantedOn }, { onConflict: 'id' }));
     return;
   }
   if (item.table === 'records') {

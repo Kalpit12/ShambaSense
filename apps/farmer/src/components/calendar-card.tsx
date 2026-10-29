@@ -36,7 +36,7 @@ export function useMarkStepDone() {
 }
 
 /** The plot's whole season: what to do and when, with the due steps ready to tick. */
-export function CalendarCard({ plot }: { plot: Plot }) {
+export function CalendarCard({ plot, onSetDate }: { plot: Plot; onSetDate: () => void }) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { done } = useCalendarDone(user?.id ?? user?.phone);
@@ -49,7 +49,12 @@ export function CalendarCard({ plot }: { plot: Plot }) {
       <SectionTitle>{t('calendar.title')}</SectionTitle>
       <Card style={styles.card}>
         {steps.length === 0 ? (
-          <Text style={styles.empty}>{t('calendar.noDate')}</Text>
+          <View style={styles.emptyBox}>
+            <Text style={styles.empty}>{t('calendar.noDate')}</Text>
+            <View style={styles.action}>
+              <Button label={t('shamba.setPlanted')} onPress={onSetDate} />
+            </View>
+          </View>
         ) : (
           steps.map((s, i) => {
             const { title, hint } = stepText(t, s);
@@ -87,7 +92,8 @@ export function CalendarCard({ plot }: { plot: Plot }) {
 const styles = StyleSheet.create({
   card: { paddingVertical: space[2] },
   flex: { flex: 1, gap: 2 },
-  empty: { ...type.body, color: color.stone600, paddingVertical: space[2] },
+  emptyBox: { paddingVertical: space[2] },
+  empty: { ...type.body, color: color.stone600 },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: space[3], paddingVertical: space[3] },
   divider: { borderTopWidth: 1, borderTopColor: color.stone200 },
   date: { ...type.meta, width: 52, color: color.stone600, paddingTop: 8, fontVariant: ['tabular-nums'] },

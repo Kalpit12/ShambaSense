@@ -137,8 +137,9 @@ export default function HomeScreen() {
   // While "Start here" shows, it covers adding plots, the first check and the first record.
   if (plots.length < total && !showStart)
     tasks.push({ key: 'plots', title: t('home.taskAddPlot'), hint: t('home.taskAddPlotHint', { done: plots.length, total }), Icon: PlantIcon, href: '/shamba?add=1' });
-  if (plots.some((p) => !p.plantedOn))
-    tasks.push({ key: 'planting', title: t('home.taskPlanting'), hint: t('home.taskPlantingHint'), Icon: CalendarBlankIcon, href: '/shamba' });
+  const undated = plots.find((p) => !p.plantedOn);
+  if (undated)
+    tasks.push({ key: 'planting', title: t('home.taskPlanting'), hint: t('home.taskPlantingHint'), Icon: CalendarBlankIcon, href: `/plot/${undated.id}` });
   if (checks.length === 0 && !showStart)
     tasks.push({ key: 'check', title: t('home.taskCheck'), hint: t('home.taskCheckHint'), Icon: CameraIcon, href: '/check' });
   if (!records.some((r) => r.occurredOn === today) && !(showStart && records.length === 0))

@@ -119,6 +119,8 @@ type FarmStore = Omit<FarmData, 'followUps'> & {
   /** Rows and photos saved on this phone that have not reached the server. */
   waiting: number;
   addPlot: (p: Omit<Plot, 'id' | 'createdAt'>) => void;
+  /** Changes a plot's details; it goes back in the queue so the server gets the change. */
+  updatePlot: (id: string, patch: Partial<Pick<Plot, 'name' | 'plantedOn' | 'areaAcres'>>) => void;
   addRecord: (r: Omit<JournalRecord, 'id' | 'createdAt'>) => void;
   addCheck: (c: Omit<CropCheck, 'id' | 'createdAt' | 'status'>) => CropCheck;
   /** Rows and photos going up right now, for "Sending 2 of 3…". */
@@ -383,6 +385,7 @@ export function FarmStoreProvider({ owner, userId, children }: { owner: string; 
         return followUp;
       },
       addPlot: (p) => update((d) => ({ ...d, plots: [...d.plots, { ...p, id: uid(), createdAt: now() }] })),
+      updatePlot: (id, patch) => update((d) => ({ ...d, plots: d.plots.map((p) => (p.id === id ? { ...p, ...patch, sent: false } : p)) })),
       addRecord: (r) => update((d) => ({ ...d, records: [{ ...r, id: uid(), createdAt: now() }, ...d.records] })),
       addCheck: (c) => {
         const id = uid();
