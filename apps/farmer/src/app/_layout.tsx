@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 
 import { initI18n } from '@/i18n';
 import { native, ReplyAlerts } from '@/lib/alerts';
+import { CalendarAlerts } from '@/lib/calendar-alerts';
 import { Button } from '@/components/button';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { installErrorReporting, reportError } from '@/lib/errors';
@@ -113,6 +114,7 @@ function RootStack() {
       </Stack.Protected>
     </Stack>
     {native && user?.onboarded ? <ReplyAlerts userId={user.id} /> : null}
+    {native && user?.onboarded && (user.id ?? user.phone) ? <CalendarAlerts owner={(user.id ?? user.phone)!} /> : null}
     </FarmStoreProvider>
   );
 }

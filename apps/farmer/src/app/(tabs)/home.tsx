@@ -10,10 +10,13 @@ import { BookOpenTextIcon, CalendarBlankIcon, CalendarCheckIcon, CameraIcon, Che
 import { Enter, PressableScale } from '@/components/motion';
 import { CheckRow, RecordRow } from '@/components/record-row';
 import { Card, SectionTitle } from '@/components/screen';
+import { STEP_ICON } from '@/components/calendar-card';
 import { StartCard } from '@/components/start-card';
 import { SyncChip } from '@/components/sync-chip';
 import { WeatherCard } from '@/components/weather-card';
 import { useAuth } from '@/lib/auth';
+import { plotSteps, useCalendarDone } from '@/lib/calendar';
+import { stepText } from '@/lib/calendar-text';
 import { useCoops } from '@/lib/coops';
 import { TYPICAL_DAYS } from '@/lib/crops';
 import { parseIso, shiftDays, shortDate, todayLabel, weeksSince } from '@/lib/dates';
@@ -45,6 +48,7 @@ export default function HomeScreen() {
   const { coops, loading: coopsLoading } = useCoops(!!user?.id);
   const { hidden: startHidden, hide: hideStart } = useStartHidden(user?.id ?? user?.phone);
   const startDone = { plot: plots.length > 0, check: checks.length > 0, record: records.length > 0, coop: coops.length > 0 };
+  const { done: calendarDone } = useCalendarDone(user?.id ?? user?.phone);
   const showStart = startHidden === false && !coopsLoading && !START_STEPS.every((s) => startDone[s]);
   const lang = i18n.language;
   const today = todayIso();
@@ -121,6 +125,15 @@ export default function HomeScreen() {
         href: '/tasks',
       });
   }
+  // Crop calendar steps due now on any plot (lib/calendar.ts).
+  for (const s of plots.flatMap((p) => plotSteps(p, today, calendarDone)).filter((s) => s.state === 'due').sort((a, b) => (a.date < b.date ? -1 : 1)))
+    tasks.push({
+      key: `cal-${s.id}`,
+      title: stepText(t, s).title,
+      hint: t('calendar.homeHint', { date: s.date === today ? t('tasks.dueToday') : shortDate(s.date, lang) }),
+      Icon: STEP_ICON[s.kind],
+      href: `/plot/${s.plot.id}`,
+    });
   // While "Start here" shows, it covers adding plots, the first check and the first record.
   if (plots.length < total && !showStart)
     tasks.push({ key: 'plots', title: t('home.taskAddPlot'), hint: t('home.taskAddPlotHint', { done: plots.length, total }), Icon: PlantIcon, href: '/shamba?add=1' });

@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/button';
+import { CalendarCard } from '@/components/calendar-card';
 import { LegendDot, MeterBar, Rings } from '@/components/charts';
 import { DarkHero, GlassPanel, HeroBody, onForestMuted } from '@/components/hero';
 import { CameraIcon, CaretLeftIcon, NotebookIcon } from '@/components/icons';
@@ -116,6 +117,10 @@ export default function PlotScreen() {
               <CameraIcon size={22} color={color.lime} weight="fill" />
               <Text style={[styles.actionText, styles.actionTextDark]}>{t('shamba.checkPlot')}</Text>
             </PressableScale>
+          </Enter>
+
+          <Enter step={2}>
+            <CalendarCard plot={plot} />
           </Enter>
 
           <Enter step={2}>

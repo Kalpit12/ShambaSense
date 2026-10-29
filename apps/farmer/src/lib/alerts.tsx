@@ -92,6 +92,10 @@ export function ReplyAlerts({ userId }: { userId?: string }) {
     if (handled.current === id) return;
     handled.current = id;
     const data = last.notification.request.content.data;
+    if (typeof data?.plotId === 'string') {
+      router.push({ pathname: '/plot/[id]', params: { id: data.plotId } });
+      return;
+    }
     if (data?.taskId) {
       refreshRef.current();
       router.push('/tasks');
