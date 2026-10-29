@@ -1,0 +1,185 @@
+<title>ShambaSense farmer handout</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: one A4 sheet. Each step is a row with Kiswahili first and English beside it, so a co-op
+   officer can read either aloud. Forest and lime come from the app itself. */
+:root {
+  --paper: #ffffff;
+  --ink: #14201a;
+  --muted: #47514b;
+  --line: #d5dad3;
+  --forest: #0f3d26;
+  --forest-soft: #e6efe8;
+  --lime: #c4ef5a;
+  --on-forest: #f4f1e6;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --paper: #0d1611; --ink: #eef1ec; --muted: #b7c0b4; --line: #2a3a31; --forest: #c4ef5a; --forest-soft: #16271d; --lime: #c4ef5a; --on-forest: #0d110e; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --paper: #0d1611; --ink: #eef1ec; --muted: #b7c0b4; --line: #2a3a31; --forest: #c4ef5a; --forest-soft: #16271d; --lime: #c4ef5a; --on-forest: #0d110e; color-scheme: dark; }
+
+body { background: var(--paper); color: var(--ink); font: 400 15px/1.45 var(--body); }
+.sheet { max-width: 820px; margin: 0 auto; padding-block: 24px 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+
+header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 3px solid var(--forest); }
+.brand { display: flex; align-items: center; gap: 12px; }
+.mark { width: 48px; height: 48px; border-radius: 12px; background: #0f3d26; display: grid; place-items: center; flex: none; }
+h1 { margin: 0; font: 800 28px/1.05 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
+h1 span { display: block; font: 600 16px/1.3 var(--body); color: var(--muted); letter-spacing: 0; margin-top: 4px; }
+.fill { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+.fill div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.fill b { color: var(--ink); white-space: nowrap; }
+.blank { display: inline-block; min-width: min(150px, 100%); border-bottom: 1.5px solid var(--ink); height: 1.1em; }
+
+.langs { display: grid; grid-template-columns: 2.25rem 1fr 1fr; gap: 0 18px; font: 700 11px/1 var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.langs span:first-child { grid-column: 2; }
+
+ol { list-style: none; margin: 0; padding: 0; display: grid; }
+li { display: grid; grid-template-columns: 2.25rem 1fr 1fr; gap: 4px 18px; padding: 12px 0; border-top: 1px solid var(--line); break-inside: avoid; }
+li:first-child { border-top: 0; padding-top: 4px; }
+.n { width: 2rem; height: 2rem; border-radius: 50%; background: var(--forest); color: var(--on-forest); font: 800 16px/2rem var(--display); text-align: center; font-variant-numeric: tabular-nums; }
+.col { min-width: 0; }
+h2 { margin: 0 0 3px; font: 700 16px/1.25 var(--body); }
+p { margin: 0; }
+.col ul { margin: 4px 0 0; padding-left: 18px; }
+.col ul li { display: list-item; padding: 0; border: 0; grid-template-columns: none; }
+.en { color: var(--muted); }
+.en h2 { color: var(--ink); }
+
+.answers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chip { font: 700 12px/1 var(--body); padding: 6px 9px; border-radius: 999px; background: var(--forest-soft); color: var(--ink); white-space: nowrap; }
+
+.note { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 12px 14px; border-radius: 10px; background: var(--forest-soft); }
+.note svg { margin-top: 2px; }
+.note p + p { margin-top: 4px; color: var(--muted); }
+
+footer { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+@media (max-width: 620px) {
+  .langs { display: none; }
+  li { grid-template-columns: 2.25rem 1fr; }
+  .en { grid-column: 2; padding-top: 6px; border-top: 1px dashed var(--line); }
+}
+@media print {
+  :root { --paper: #fff; --ink: #14201a; --muted: #47514b; --line: #c9d0c6; --forest: #0f3d26; --forest-soft: #eef4ef; --on-forest: #f4f1e6; color-scheme: light; }
+  @page { size: A4; margin: 12mm; }
+  body { font-size: 12.5px; }
+  .sheet { padding: 0; gap: 12px; }
+  li { padding: 8px 0; }
+}
+</style>
+
+<main class="sheet">
+  <header>
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 30 30"><path d="M21 7.5c-1.6-1.6-3.7-2.5-6-2.5-4 0-7 2.4-7 5.6 0 6.6 14 3.2 14 9.6 0 3.2-3.2 5.3-7 5.3-2.6 0-5-1-6.6-2.8" fill="none" stroke="#c4ef5a" stroke-width="3.2" stroke-linecap="round"/></svg>
+      </div>
+      <h1>ShambaSense<span>Mwongozo wa mkulima · Farmer guide</span></h1>
+    </div>
+    <div class="fill">
+      <div><b>Nambari ya chama / Co-op code:</b><span class="blank"></span></div>
+      <div><b>Simu ya chama / Co-op phone:</b><span class="blank"></span></div>
+    </div>
+  </header>
+
+  <div class="langs" aria-hidden="true"><span>Kiswahili</span><span>English</span></div>
+
+  <ol>
+    <li>
+      <div class="n">1</div>
+      <div class="col" lang="sw">
+        <h2>Fungua akaunti</h2>
+        <p>Fungua ShambaSense, chagua Kiswahili, kisha weka nambari yako ya simu. Utapokea SMS yenye nambari ya tarakimu 6. <b>Usimpe mtu nambari hii.</b></p>
+      </div>
+      <div class="col en" lang="en">
+        <h2>Create your account</h2>
+        <p>Open ShambaSense, choose your language and enter your phone number. An SMS brings a 6-digit code. <b>Never share this code.</b></p>
+      </div>
+    </li>
+    <li>
+      <div class="n">2</div>
+      <div class="col" lang="sw">
+        <h2>Ongeza vipande vyako</h2>
+        <p>Kwenye <b>Shamba</b>, ongeza kila kipande: jina lake, zao, na tarehe ya kupanda.</p>
+      </div>
+      <div class="col en" lang="en">
+        <h2>Add your plots</h2>
+        <p>In <b>Shamba</b>, add each field: its name, the crop, and the planting date.</p>
+      </div>
+    </li>
+    <li>
+      <div class="n">3</div>
+      <div class="col" lang="sw">
+        <h2>Angalia zao lenye ugonjwa</h2>
+        <p>Bonyeza kitufe cha kamera <b>Angalia</b>. Picha nzuri:</p>
+        <ul>
+          <li>Karibu na jani moja au tunda moja</li>
+          <li>Mwanga wa mchana, bila flash</li>
+          <li>Shika simu bila kutikisika</li>
+        </ul>
+        <div class="answers"><span class="chip">Inawezekana zaidi</span><span class="chip">Inawezekana</span><span class="chip">Piga picha nyingine</span></div>
+      </div>
+      <div class="col en" lang="en">
+        <h2>Check a sick crop</h2>
+        <p>Tap the camera button, <b>Check</b>. A good photo is:</p>
+        <ul>
+          <li>Close to one leaf or fruit</li>
+          <li>In daylight, without the flash</li>
+          <li>Held still until it is sharp</li>
+        </ul>
+        <div class="answers"><span class="chip">More likely</span><span class="chip">Possible</span><span class="chip">Need another photo</span></div>
+      </div>
+    </li>
+    <li>
+      <div class="n">4</div>
+      <div class="col" lang="sw">
+        <h2>Uliza mtaalamu</h2>
+        <p>Kama jibu halina uhakika, bonyeza <b>Uliza mtaalamu</b>. Mtaalamu wa chama atajibu kwenye simu yako. Akiomba picha ya pili, piga picha ya mmea ule ule baada ya siku chache.</p>
+      </div>
+      <div class="col en" lang="en">
+        <h2>Ask an agronomist</h2>
+        <p>If the answer is not sure, tap <b>Ask an agronomist</b>. Your co-op's agronomist replies in the app. If they ask for a follow-up photo, photograph the same plant again a few days later.</p>
+      </div>
+    </li>
+    <li>
+      <div class="n">5</div>
+      <div class="col" lang="sw">
+        <h2>Andika kazi ya kila siku</h2>
+        <p>Kwenye <b>Daftari</b>, andika kazi, pembejeo, mavuno na mauzo. Nyumbani utaona faida na matumizi ya wiki 8.</p>
+      </div>
+      <div class="col en" lang="en">
+        <h2>Write down each day's work</h2>
+        <p>In <b>Journal</b>, record work, inputs, harvest and sales. Home shows money in and out over 8 weeks.</p>
+      </div>
+    </li>
+    <li>
+      <div class="n">6</div>
+      <div class="col" lang="sw">
+        <h2>Jiunge na chama chako</h2>
+        <p>Kwenye <b>Wasifu</b>, bonyeza <b>Jiunge na chama</b> na uweke nambari ya chama iliyo juu ya karatasi hii. Unaweza kuondoka wakati wowote.</p>
+      </div>
+      <div class="col en" lang="en">
+        <h2>Join your co-op</h2>
+        <p>In <b>Profile</b>, tap <b>Join a co-op</b> and type the co-op code at the top of this sheet. You can leave at any time.</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="note">
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <div>
+      <p lang="sw"><b>Hakuna mtandao? Endelea tu.</b> Kila kitu kinahifadhiwa kwenye simu na kitatumwa chenyewe ukipata mtandao. Hali ya hewa ya siku 3 iko Nyumbani.</p>
+      <p lang="en">No signal? Keep going. Everything is saved on the phone and sends by itself when there is signal. Home shows a 3-day weather forecast.</p>
+    </div>
+  </div>
+
+  <footer>
+    <span lang="sw">Kabla ya kunyunyiza dawa, soma lebo na umuulize mtaalamu wa chama.</span>
+    <span lang="en">Before spraying any chemical, read the label and ask your co-op agronomist.</span>
+  </footer>
+</main>
