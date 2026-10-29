@@ -10,15 +10,18 @@ import { BookOpenTextIcon, CalendarBlankIcon, CalendarCheckIcon, CameraIcon, Che
 import { Enter, PressableScale } from '@/components/motion';
 import { CheckRow, RecordRow } from '@/components/record-row';
 import { Card, SectionTitle } from '@/components/screen';
+import { StartCard } from '@/components/start-card';
 import { SyncChip } from '@/components/sync-chip';
 import { WeatherCard } from '@/components/weather-card';
 import { useAuth } from '@/lib/auth';
+import { useCoops } from '@/lib/coops';
 import { TYPICAL_DAYS } from '@/lib/crops';
 import { parseIso, shiftDays, shortDate, todayLabel, weeksSince } from '@/lib/dates';
 import { todayIso, useFarm, type JournalRecord, type Plot } from '@/lib/farm-store';
 import { formatKes } from '@/lib/format';
 import { followUpNeeded, followUpState } from '@/lib/follow-up';
 import { expectedPlots } from '@/lib/onboarding';
+import { START_STEPS, useStartHidden } from '@/lib/start-guide';
 import { useCoopTasks } from '@/lib/tasks';
 import { color, font, radius, space, type } from '@/theme/tokens';
 
@@ -39,6 +42,10 @@ export default function HomeScreen() {
     refreshTasks();
   }, [refreshTasks]);
   const farm = user?.farm;
+  const { coops, loading: coopsLoading } = useCoops(!!user?.id);
+  const { hidden: startHidden, hide: hideStart } = useStartHidden(user?.id ?? user?.phone);
+  const startDone = { plot: plots.length > 0, check: checks.length > 0, record: records.length > 0, coop: coops.length > 0 };
+  const showStart = startHidden === false && !coopsLoading && !START_STEPS.every((s) => startDone[s]);
   const lang = i18n.language;
   const today = todayIso();
 
@@ -114,13 +121,14 @@ export default function HomeScreen() {
         href: '/tasks',
       });
   }
-  if (plots.length < total)
+  // While "Start here" shows, it covers adding plots, the first check and the first record.
+  if (plots.length < total && !showStart)
     tasks.push({ key: 'plots', title: t('home.taskAddPlot'), hint: t('home.taskAddPlotHint', { done: plots.length, total }), Icon: PlantIcon, href: '/shamba?add=1' });
   if (plots.some((p) => !p.plantedOn))
     tasks.push({ key: 'planting', title: t('home.taskPlanting'), hint: t('home.taskPlantingHint'), Icon: CalendarBlankIcon, href: '/shamba' });
-  if (checks.length === 0)
+  if (checks.length === 0 && !showStart)
     tasks.push({ key: 'check', title: t('home.taskCheck'), hint: t('home.taskCheckHint'), Icon: CameraIcon, href: '/check' });
-  if (!records.some((r) => r.occurredOn === today))
+  if (!records.some((r) => r.occurredOn === today) && !(showStart && records.length === 0))
     tasks.push({ key: 'record', title: t('home.taskRecord'), hint: t('home.taskRecordHint'), Icon: NotebookIcon, href: '/journal?add=1' });
 
   const county = farm?.county || user?.county;
@@ -193,6 +201,12 @@ export default function HomeScreen() {
         </DarkHero>
 
         <HeroBody>
+          {showStart ? (
+            <Enter step={2}>
+              <StartCard done={startDone} onHide={hideStart} />
+            </Enter>
+          ) : null}
+
           {tasks.length > 0 ? (
             <Enter step={2}>
               <SectionTitle>{t('home.today')}</SectionTitle>

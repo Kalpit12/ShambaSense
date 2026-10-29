@@ -202,6 +202,20 @@ export const en = {
     recent: 'Recent records',
     seeAll: 'See all',
   },
+  startHere: {
+    title: 'Start here',
+    progress: '{{done}} of {{total}} done',
+    hide: 'Hide',
+    hideHint: 'Hide this guide',
+    done: 'Done',
+    steps: {
+      plot: { title: 'Add your plots', hint: 'Name each field and what grows there' },
+      check: { title: 'Check a sick crop', hint: 'Open Check and photograph one leaf up close, in daylight' },
+      record: { title: "Write down today's work", hint: 'Work, inputs, harvest or sales, in Journal' },
+      coop: { title: 'Join your co-op', hint: 'Get the join code from your co-op, then Profile → Join a co-op' },
+    },
+    offline: 'No signal? Keep going. Everything is saved on this phone and sends by itself when there is signal.',
+  },
   weather: {
     title: 'Weather',
     today: 'Today',

@@ -205,6 +205,20 @@ export const sw: Strings = {
     recent: 'Kumbukumbu za karibuni',
     seeAll: 'Ona zote',
   },
+  startHere: {
+    title: 'Anza hapa',
+    progress: '{{done}} kati ya {{total}} yamekamilika',
+    hide: 'Ficha',
+    hideHint: 'Ficha mwongozo huu',
+    done: 'Imekamilika',
+    steps: {
+      plot: { title: 'Ongeza vipande vyako', hint: 'Taja kila kipande na kinachopandwa humo' },
+      check: { title: 'Angalia zao lenye ugonjwa', hint: 'Fungua Angalia na upige picha ya jani moja kwa karibu, mchana' },
+      record: { title: 'Andika kazi ya leo', hint: 'Kazi, pembejeo, mavuno au mauzo, kwenye Daftari' },
+      coop: { title: 'Jiunge na chama chako', hint: 'Pata nambari ya kujiunga kutoka kwa chama chako, kisha Wasifu → Jiunge na chama' },
+    },
+    offline: 'Hakuna mtandao? Endelea tu. Kila kitu kinahifadhiwa kwenye simu hii na kitatumwa chenyewe ukipata mtandao.',
+  },
   weather: {
     title: 'Hali ya hewa',
     today: 'Leo',
