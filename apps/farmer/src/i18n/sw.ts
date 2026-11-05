@@ -379,6 +379,17 @@ export const sw: Strings = {
   alerts: {
     channel: 'Majibu ya wataalamu',
   },
+  sms: {
+    title: 'Ujumbe mfupi',
+    switch: 'Nitumie ujumbe wa SMS',
+    hint: 'Pata SMS mtaalamu akijibu, akiomba picha nyingine, au picha ya ufuatiliaji ikihitajika. Inafanya kazi bila data.',
+    sentTo: 'Ujumbe unatumwa kwa {{phone}}.',
+    rules: 'Hadi ujumbe 3 kwa siku, kamwe kati ya saa 3 usiku na saa 1 asubuhi. Ni bure kwako.',
+    error: {
+      offline: 'Hakuna mtandao. Jaribu tena ukipata mtandao.',
+      unknown: 'Imeshindikana kuhifadhi. Jaribu tena.',
+    },
+  },
   coop: {
     title: 'Chama cha ushirika',
     none: 'Hujajiunga na chama cha ushirika kwenye ShambaSense. Kama chama chako kimekupa nambari, jiunge ili wataalamu wake waone na kujibu ukaguzi wako wa mazao.',

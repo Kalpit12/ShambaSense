@@ -376,6 +376,17 @@ export const en = {
   alerts: {
     channel: 'Replies from agronomists',
   },
+  sms: {
+    title: 'Text messages',
+    switch: 'Text me updates',
+    hint: 'Get an SMS when an agronomist answers, asks for another photo, or a follow-up photo is due. Works without data.',
+    sentTo: 'Texts go to {{phone}}.',
+    rules: 'At most 3 a day, never between 9 pm and 7 am. Free for you.',
+    error: {
+      offline: 'No signal. Try again when you have signal.',
+      unknown: 'Could not save. Try again.',
+    },
+  },
   coop: {
     title: 'Co-op',
     none: 'You are not in a co-op on ShambaSense. If your co-op gave you a code, join so its agronomists can see and answer your crop checks.',

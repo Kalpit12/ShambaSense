@@ -8,6 +8,8 @@ migrations/
   20261027200100_access_rules.sql       row-level security on every table (§5.6)
   20261027200200_issue_functions.sql    ask_agronomist, review_issue, set_issue_status, assign_issue_to_me, auto-issue trigger
   20261027200300_storage_and_causes.sql private check-photos bucket and the cause list
+  ...
+  20261105120000_sms_updates.sql        SMS case updates: outbox, opt-in, quiet hours, daily cap
 tests/
   supabase-stub.sql                     stand-in auth/storage schemas for plain Postgres
   access_rules_test.sql                 signs in as farmer A, farmer B and an agronomist and checks what each can do
@@ -92,3 +94,42 @@ Adds `county`, `contact_phone` and `crops` to `orgs`. Admins save them with `upd
 tidies phone numbers to +2547... and only accepts the six photo-check crops); any member sets the name
 farmers see with `set_my_display_name`. `my_coops()` now returns the co-op's phone so the farmer app can
 offer a Call link. The dashboard still signs in before this migration runs, with all crops on.
+
+## SMS case updates (`functions/send-updates`)
+
+A farmer who turns on **Text me updates** in Profile gets a short SMS in their language when an agronomist
+answers a case, asks for another photo, or a follow-up photo is due (architecture.md §10). It is for
+farmers who are often out of data, so push alerts never reach them. `20261105120000_sms_updates.sql` adds:
+
+- `sms_outbox`: one row per text, `queued` → `sending` → `sent` → `delivered` (or `failed`, `expired`, `skipped`).
+- A trigger on `issue_events` and a daily 08:00 job that queue texts. At most three a day per farmer, one
+  follow-up text per case, nothing between 21:00 and 07:00 Nairobi time (those wait until morning), and a
+  text not sent within a day is dropped. Each text is one 160-character ASCII SMS.
+- `set_sms_updates(on, language)` for the app's switch. It records an `sms_updates` consent, and turning
+  texts off withdraws it and drops texts still waiting.
+- The `sms_updates` flag, on by default. `update feature_flags set enabled = false where key = 'sms_updates';`
+  stops all new texts.
+
+Texts only leave once the function is deployed and scheduled. Without that they wait and expire after a day.
+
+1. Deploy with JWT checks off (the function checks its own secret):
+   `supabase functions deploy send-updates --no-verify-jwt`
+2. Add the secret `SMS_SENDER_SECRET` (any long random string). `AT_USERNAME`, `AT_API_KEY` and
+   `AT_SENDER_ID` are shared with `send-sms`.
+3. Schedule it every minute (SQL Editor, with your project ref and the same secret):
+
+   ```sql
+   select vault.create_secret('https://<project-ref>.supabase.co/functions/v1/send-updates', 'sms_sender_url');
+   select vault.create_secret('<the same SMS_SENDER_SECRET>', 'sms_sender_secret');
+   select cron.schedule('send-sms-updates', '* * * * *', $$
+     select net.http_post(
+       url := (select decrypted_secret from vault.decrypted_secrets where name = 'sms_sender_url'),
+       headers := jsonb_build_object('Content-Type', 'application/json',
+         'x-sender-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'sms_sender_secret')),
+       body := '{}'::jsonb)
+   $$);
+   ```
+4. In Africa's Talking → SMS → Delivery Reports, set the callback URL to
+   `https://<project-ref>.supabase.co/functions/v1/send-updates?report=<SMS_SENDER_SECRET>`.
+
+To see what went out: `select created_at, kind, status, body, error from sms_outbox order by created_at desc limit 50;`

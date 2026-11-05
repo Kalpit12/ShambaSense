@@ -13,6 +13,7 @@ import { Enter, PressableScale } from '@/components/motion';
 import { LanguageTiles } from '@/components/language-tiles';
 import { Card, SectionTitle } from '@/components/screen';
 import { Sheet } from '@/components/sheet';
+import { SmsUpdatesCard } from '@/components/sms-updates-card';
 import { SyncChip, syncTime } from '@/components/sync-chip';
 import { forgetPushToken } from '@/lib/alerts';
 import { forgetGuides } from '@/lib/guides';
@@ -120,6 +121,10 @@ export default function ProfileScreen() {
 
           <Enter step={3}>
             <CoopCard signedIn={!!user?.id} />
+          </Enter>
+
+          <Enter step={3}>
+            <SmsUpdatesCard signedIn={!!user?.id} phone={user?.phone} />
           </Enter>
 
           <Enter step={3}>

@@ -245,6 +245,58 @@ exception when insufficient_privilege then raise notice 'ok: only the scheduler 
 end $$;
 reset role;
 
+-- SMS case updates: only for farmers who turned them on, in their language, never at night.
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check(not public.my_sms_updates(), 'SMS updates start off');
+reset role;
+insert into public.issue_events (issue_id, actor_kind, actor_name, kind, body)
+  values ((select id from public.issues where origin_check_id = '40000000-0000-0000-0000-000000000001'), 'agronomist', 'Wanjiru K.', 'review_adjust', 'Spray only in the evening.');
+select pg_temp.check((select count(*) from public.sms_outbox) = 0, 'no text for a farmer who did not ask');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.set_sms_updates(true, 'sw');
+select public.set_sms_updates(true, 'sw');
+select pg_temp.check(public.my_sms_updates() and (select count(*) from public.consents where kind = 'sms_updates' and withdrawn_at is null) = 1, 'turning texts on records one consent');
+reset role;
+insert into public.issue_events (issue_id, actor_kind, actor_name, kind, body)
+  values ((select id from public.issues where origin_check_id = '40000000-0000-0000-0000-000000000001'), 'agronomist', 'Wanjiru K.', 'review_agree', 'Ondoa majani ya chini   na uyachome.');
+select pg_temp.check((select body from public.sms_outbox order by created_at desc limit 1)
+  = 'ShambaSense: Mtaalamu amejibu ukaguzi wako wa nyanya. "Ondoa majani ya chini na uyachome."'
+  and (select phone from public.sms_outbox limit 1) = '+254712345678', 'an answer queues a text in the farmer''s language');
+insert into public.issue_events (issue_id, actor_kind, actor_name, kind, body)
+  values ((select id from public.issues where origin_check_id = '40000000-0000-0000-0000-000000000001'), 'agronomist', 'Wanjiru K.', 'request_photos', repeat('Please photograph the underside of the leaves too. ', 6));
+select pg_temp.check((select max(char_length(body)) from public.sms_outbox) <= 160
+  and (select body from public.sms_outbox where kind = 'request_photos') like '%..."', 'a long answer is cut to one SMS');
+insert into public.issue_events (issue_id, actor_kind, actor_name, kind, body)
+  values ((select id from public.issues where origin_check_id = '40000000-0000-0000-0000-000000000001'), 'agronomist', 'Wanjiru K.', 'review_agree', 'One more.'),
+         ((select id from public.issues where origin_check_id = '40000000-0000-0000-0000-000000000001'), 'agronomist', 'Wanjiru K.', 'review_agree', 'And another.');
+select pg_temp.check((select count(*) from public.sms_outbox) = 3, 'no more than three texts a day');
+select pg_temp.check(public.sms_send_after('2026-11-05 19:30:00+00') = '2026-11-06 04:00:00+00'
+  and public.sms_send_after('2026-11-05 02:00:00+00') = '2026-11-05 04:00:00+00'
+  and public.sms_send_after('2026-11-05 09:00:00+00') = '2026-11-05 09:00:00+00', 'texts wait from 21:00 to 07:00 Nairobi time');
+update public.sms_outbox set send_after = now() - interval '1 minute';
+select pg_temp.check((select count(*) from public.claim_sms_batch(2)) = 2 and (select count(*) from public.claim_sms_batch(10)) = 1, 'a text is claimed once');
+select public.mark_sms(id, 'sent', 'ATXid_' || id, null) from public.sms_outbox;
+select pg_temp.check(public.sms_delivery_report('ATXid_' || (select id from public.sms_outbox order by created_at limit 1), 'Success', null), 'a delivery report finds its text');
+select pg_temp.check((select count(*) from public.sms_outbox where status = 'delivered') = 1, 'a delivery report marks the text delivered');
+delete from public.sms_outbox;
+update public.issues set follow_up_due_on = (now() at time zone 'Africa/Nairobi')::date, status = 'action_given' where origin_check_id = '40000000-0000-0000-0000-000000000001';
+select pg_temp.check(public.queue_follow_up_sms() = 1 and public.queue_follow_up_sms() = 0, 'one follow-up text per case');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.check((select count(*) from public.sms_outbox) = 0, 'farmers cannot see other farmers'' texts');
+do $$ begin
+  perform public.claim_sms_batch(10);
+  raise exception 'FAILED: a farmer claimed texts';
+exception when insufficient_privilege then raise notice 'ok: only the sender claims texts';
+end $$;
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.check((select count(*) from public.sms_outbox) = 1, 'a farmer sees own texts');
+select public.set_sms_updates(false, 'sw');
+reset role;
+select pg_temp.check((select status from public.sms_outbox) = 'skipped'
+  and (select count(*) from public.consents where kind = 'sms_updates' and withdrawn_at is null) = 0, 'turning texts off withdraws consent and drops waiting texts');
+delete from public.sms_outbox;
+
 -- Knowledge base: a guide reaches farmers only after someone else reviews it.
 reset role;
 update public.org_farmer_links set status = 'active' where farmer_id = '00000000-0000-0000-0000-00000000000b' and org_id = '00000000-0000-0000-0000-0000000000f1';
