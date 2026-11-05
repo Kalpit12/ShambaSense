@@ -39,9 +39,9 @@ insert into public.feature_flags (key, enabled) values ('sms_updates', true) on 
 -- Plain ASCII keeps a text to one 160-character GSM message.
 create function public.sms_text(p text) returns text
 language sql immutable set search_path = '' as $$
-  select btrim(regexp_replace(regexp_replace(
+  select btrim(regexp_replace(regexp_replace(regexp_replace(
     translate(coalesce(p, ''), '‘’“”–—', '''''""--'),
-    '[^ -~]', '', 'g'), '\s+', ' ', 'g'))
+    '\s+', ' ', 'g'), '[^ -~]', '', 'g'), ' {2,}', ' ', 'g'))
 $$;
 
 -- When a text queued now may go out: straight away by day, 07:00 Nairobi time by night.

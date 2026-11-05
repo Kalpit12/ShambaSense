@@ -258,7 +258,7 @@ select public.set_sms_updates(true, 'sw');
 select pg_temp.check(public.my_sms_updates() and (select count(*) from public.consents where kind = 'sms_updates' and withdrawn_at is null) = 1, 'turning texts on records one consent');
 reset role;
 insert into public.issue_events (issue_id, actor_kind, actor_name, kind, body)
-  values ((select id from public.issues where origin_check_id = '40000000-0000-0000-0000-000000000001'), 'agronomist', 'Wanjiru K.', 'review_agree', 'Ondoa majani ya chini   na uyachome.');
+  values ((select id from public.issues where origin_check_id = '40000000-0000-0000-0000-000000000001'), 'agronomist', 'Wanjiru K.', 'review_agree', 'Ondoa majani ya chini'||chr(10)||'na uyachome.');
 select pg_temp.check((select body from public.sms_outbox order by created_at desc limit 1)
   = 'ShambaSense: Mtaalamu amejibu ukaguzi wako wa nyanya. "Ondoa majani ya chini na uyachome."'
   and (select phone from public.sms_outbox limit 1) = '+254712345678', 'an answer queues a text in the farmer''s language');
